@@ -1,0 +1,148 @@
+devtools::install_github("hughjonesd/ggmagnify")
+install.packages(c("ggfx", "ggforce")
+install.packages(c("ggfx", "ggforce"))
+library(ggplot2)
+library(dplyr)
+library(ggmagnify)
+
+
+new_o <- read.csv("<yourFolderLocation>FSMsStat.txt", sep=" ", row.names=NULL)
+
+tiff(file= "<yourFolderLocation>transfers.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(new_o , aes(x=FSMStates,y=log10(SIS_Tr), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(SIS_Tr+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(SIS_Tr+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(SIS_Tr+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of transfer inputs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+tiff(file= "<yourFolderLocation>SISCost.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(new_o , aes(x=FSMStates,y=log10(SIS_Cost), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(SIS_Cost)))+geom_boxplot(aes(x=FSMStates,y=log10(SIS_Cost),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(SIS_Cost),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of Inputs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+tiff(file= "<yourFolderLocation>SISSize.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(new_o , aes(x=FSMStates,y=log10(SIS_Size), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(SIS_Size)))+geom_boxplot(aes(x=FSMStates,y=log10(SIS_Size),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(SIS_Size),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of Sequences)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+
+tiff(file= "<yourFolderLocation>mem.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(new_o , aes(x=FSMStates,y=log10(W_Memory+0.001), color = Algorithm))+geom_boxplot(aes(x=FSMStates,y=log10(W_Memory),fill=factor(FSMStates)),outlier.shape = NA)+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(W_Memory+0.001)))+geom_point(aes(x=FSMStates,y=log10(W_Memory+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(MBs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+tiff(file= "<yourFolderLocation>tim.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(new_o , aes(x=FSMStates,y=log10(W_Time+0.001), color = Algorithm))+geom_boxplot(aes(x=FSMStates,y=log10(W_Time),fill=factor(FSMStates)),outlier.shape = NA)+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(W_Time+0.001)))+geom_point(aes(x=FSMStates,y=log10(W_Time+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Time(msecs))")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+tiff(file= "<yourFolderLocation>TSSize.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(new_o , aes(x=FSMStates,y=log10(TS_Size), color = Algorithm))+geom_boxplot(aes(x=FSMStates,y=log10(TS_Size),fill=factor(FSMStates)),outlier.shape = NA)+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(TS_Size)))+geom_point(aes(x=FSMStates,y=log10(TS_Size),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(# of sequences in TS)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+tiff(file= "<yourFolderLocation>TSCost.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(new_o , aes(x=FSMStates,y=log10(TS_Cost), color = Algorithm))+geom_boxplot(aes(x=FSMStates,y=log10(TS_Cost),fill=factor(FSMStates)),outlier.shape = NA)+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(TS_Cost)))+geom_point(aes(x=FSMStates,y=log10(TS_Cost),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("# of inputs in TS")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+
+
+
+new_O_Bench <- read.csv("<yourFolderLocation>Benchmarks/benchFsmsStat.txt", sep=" ", row.names=NULL)
+
+tiff(file= "<yourFolderLocation>Benchmarks/BTS_Cost.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
+ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=(log10(TS_Cost)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+tiff(file= "<yourFolderLocation>Benchmarks/BTS_Size.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
+ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=(log10(TS_Size)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+tiff(file= "<yourFolderLocation>Benchmarks/BSIS_Size.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
+ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=((SIS_Size)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+tiff(file= "<yourFolderLocation>Benchmarks/BSIS_Cost.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
+ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=((SIS_Cost)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+tiff(file= "<yourFolderLocation>Benchmarks/BSIS_Tran.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
+ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=((SIS_Tr)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+tiff(file= "<yourFolderLocation>Benchmarks/BTime.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
+ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=(log10(W_Time)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+tiff(file= "<yourFolderLocation>Benchmarks/BMemory.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
+ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=(log10(W_Memory)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+dev.off()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/trans.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(OrderedWResults , aes(x=FSMStates,y=log10(Transfer+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(Transfer+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(Transfer+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(Transfer+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of transfers)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+
+dev.off()
+
+
+
+
+tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/sii.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(OrderedWResults , aes(x=FSMStates,y=log10(State_Identification_Inputs+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(State_Identification_Inputs+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(State_Identification_Inputs+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(State_Identification_Inputs+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of state identification inputs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+
+dev.off()
+
+
+tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/sis.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(OrderedWResults , aes(x=FSMStates,y=log10(State_Identification_Sequences+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(State_Identification_Sequences+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(State_Identification_Sequences+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(State_Identification_Sequences+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of state identification sequences)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
+
+dev.off()
+
+
+
+tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/tii.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(OrderedWResults , aes(x=FSMStates,y=log10(Transition_Identification_Inputs+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(Transition_Identification_Inputs+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(Transition_Identification_Inputs+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(Transition_Identification_Inputs+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of transition identification inputs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE) +geom_magnify(from = c(90,200,4,4.9), to = c(50,200,2.5,3.5),shadow = TRUE)
+
+dev.off()
+
+
+tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/tis.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
+
+ggplot(OrderedWResults , aes(x=FSMStates,y=log10(Transition_Identification_Sequences+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(Transition_Identification_Sequences+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(Transition_Identification_Sequences+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(Transition_Identification_Sequences+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of transition identification sequences)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE) +geom_magnify(from = c(90,200,3.2,4.1), to = c(80,200,1.7,2.8),shadow = TRUE)
+dev.off()
+
+
+
+
