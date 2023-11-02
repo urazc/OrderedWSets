@@ -940,9 +940,12 @@ bool hasEuler()
                 reached[edges[j][i].dest]--;
         }
     }
-    for (int j = 0; j < edges.size(); j++)
+    int ctr = 0;
+    for (int j = 0; j < states; j++)
     {
         if (reached[j] > 0 || reached[j] < 0)
+            ctr++;
+        if(ctr>1)
             return false;
     }
 
