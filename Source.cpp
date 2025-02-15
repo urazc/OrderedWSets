@@ -8,32 +8,31 @@
 #include <Psapi.h>
 #include <deque>
 using namespace std;
-vector<vector<int>> nextStates;
-vector<vector<int>> observedOutputs;
-vector<vector<vector<int>>> separatingSequences;
-int FSMid = 0, FSMStates = 0, FSMSize = 0, FSMInputs = 0, FSMOutputs = 0, dv = 0;
-int pairCount = 0;
-int transferLengthC = 0;
-int transferLengthO = 0;
-int transferLengthM = 0;
 
-int maximumPath = 0;
+// Global variables to store FSM (Finite State Machine) related data
+vector<vector<int>> nextStates; // Stores the next state for each state and input
+vector<vector<int>> observedOutputs; // Stores the output for each state and input
+vector<vector<vector<int>>> separatingSequences; // Stores separating sequences for state pairs
+int FSMid = 0, FSMStates = 0, FSMSize = 0, FSMInputs = 0, FSMOutputs = 0, dv = 0; // FSM properties
+int pairCount = 0; // Counter for state pairs
+int transferLengthC = 0, transferLengthO = 0, transferLengthM = 0; // Lengths of transfer sequences
+int maximumPath = 0; // Maximum path length
+int depth = 0; // Depth for DFS/BFS
+deque<int> indexes; // Indexes for sequence construction
+vector<int> inputsOrder; // Order of inputs for sequence construction
+stack<int> mySequence, sequence; // Stacks for sequence storage
 
-int depth = 0;
-deque<int> indexes;
-vector<int> inputsOrder;
-stack<int> mySequence;
-stack<int> sequence;
+// Edge structure for graph traversal
 struct edge {
-    int dest;
-    bool visited;
+    int dest; // Destination state
+    bool visited; // Whether the edge has been visited
 };
 
-vector<vector<edge>> edges;
-queue<pair<int, vector<int>>> myQ;
-vector<vector<bool>> sms;
+vector<vector<edge>> edges; // Graph representation of FSM
+queue<pair<int, vector<int>>> myQ; // Queue for BFS
+vector<vector<bool>> sms; // State machine states
 
-
+// Function to get the memory usage in MB
 double getUsedMemoryMB()
 {
     PROCESS_MEMORY_COUNTERS_EX pmc;
@@ -48,11 +47,15 @@ double getUsedMemoryMB()
 
     return mem;
 }
+
+// Function to return the index of a state pair (i, j) in a triangular matrix
 unsigned int returnPairIndex(int i, int j, int n)
 {
     int result = ((i * n) - (i * (i + 1) / 2)) + (j - i - 1);
     return result;
 }
+
+// Function to separate states based on outputs for a given input
 vector<pair<int, int>> separates(vector<int>& s, int x)
 {
     vector<vector<int>>temp;
@@ -109,6 +112,8 @@ vector<pair<int, int>> separates(vector<int>& s, int x)
     }
     return origins;
 }
+
+// Similar to separates but with a different approach
 vector<pair<int, int>> separatesClassic(vector<int>& s, int x)
 {
     vector<vector<int>>temp;
@@ -167,6 +172,8 @@ vector<pair<int, int>> separatesClassic(vector<int>& s, int x)
     }
     return origins;
 }
+
+// Function to increment a class with a new input
 pair< vector<pair<int, int>>, vector<int>> incrementAClass(pair< vector<pair<int, int>>, vector<int>>& myClass, int input)
 {
     vector<pair<int, int>> RESULT;
@@ -186,7 +193,6 @@ pair< vector<pair<int, int>>, vector<int>> incrementAClass(pair< vector<pair<int
     {
         int L = myClass.first[i].first;
         int R = myClass.first[i].second;
-
 
         vector<int> tempL, tempR;
 
@@ -258,6 +264,8 @@ pair< vector<pair<int, int>>, vector<int>> incrementAClass(pair< vector<pair<int
     else
         return  pair< vector<pair<int, int>>, vector<int>>(vector<pair<int, int>>(), vector<int>());
 }
+
+// Similar to incrementAClass but with a different approach
 pair< vector<pair<int, int>>, vector<int>> incrementAClassClassic(pair< vector<pair<int, int>>, vector<int>>& myClass, int input)
 {
     vector<pair<int, int>> RESULT;
@@ -339,6 +347,8 @@ pair< vector<pair<int, int>>, vector<int>> incrementAClassClassic(pair< vector<p
     else
         return  pair< vector<pair<int, int>>, vector<int>>(vector<pair<int, int>>(), vector<int>());
 }
+
+// Function to check if an element is in a vector
 bool isAdded(vector<int>& l, int r)
 {
     bool nt = false;
@@ -350,6 +360,8 @@ bool isAdded(vector<int>& l, int r)
     }
     return false;
 }
+
+// Function to check if one vector is a prefix of another
 bool isPrefix(vector<int>& L, vector<int>& R)
 {
     for (int i = 0; i < L.size(); i++)
@@ -362,6 +374,8 @@ bool isPrefix(vector<int>& L, vector<int>& R)
     }
     return true;
 }
+
+// Function to check if two vectors are equal
 bool areEqual(vector<int>& L, vector<int>& R)
 {
     if (L.size() < R.size())
@@ -376,6 +390,8 @@ bool areEqual(vector<int>& L, vector<int>& R)
     }
     return isPrefix(L, R);
 }
+
+// Function to check if one vector is a prefix of another
 bool isLinR(vector<int>& L, vector<int>& R)
 {
     if (L.size() <= R.size())
@@ -386,6 +402,8 @@ bool isLinR(vector<int>& L, vector<int>& R)
 
     return false;
 }
+
+// Function to check if one vector is in another
 int isIn(vector<int>& L, vector<int>& R)
 {
     if (L.size() > R.size())
@@ -402,6 +420,8 @@ int isIn(vector<int>& L, vector<int>& R)
     }
     return 1;
 }
+
+// Function to check if a sequence has an asset in a vector of sequences
 bool hasAsset(vector<vector<int>>& cs, vector<int>& seqs)
 {
     for (int i = 0; i < cs.size(); i++)
@@ -412,6 +432,8 @@ bool hasAsset(vector<vector<int>>& cs, vector<int>& seqs)
     }
     return false;
 }
+
+// Function to get the state reached after applying a sequence of inputs
 int reachedState(int state, vector<int> seq)
 {
     for (int i = 0; i < seq.size(); i++)
@@ -420,6 +442,8 @@ int reachedState(int state, vector<int> seq)
     }
     return state;
 }
+
+// Function to get the ordering sequence with maximum transfer index
 int getOrderingSequence(vector<vector<int>>& seqs)
 {
     int max_transfer_index = INT_MIN;
@@ -484,74 +508,68 @@ int getOrderingSequence(vector<vector<int>>& seqs)
     return -1;
 }
 
+// Function to remove prefixes from a set of sequences
 void removePrefixes(vector<vector<vector<int>>>& CS)
 {
-
-
+    if (CS[0].size() > 0)
     {
-        if (CS[0].size() > 0)
+        for (int k = 0; k < CS[0].size() - 1; k++)
         {
-            for (int k = 0; k < CS[0].size() - 1; k++)
+            for (int l = k + 1; l < CS[0].size(); l++)
             {
-                for (int l = k + 1; l < CS[0].size(); l++)
+                if (CS[0][k].size() > 0 && CS[0][l].size() > 0)
                 {
-                    if (CS[0][k].size() > 0 && CS[0][l].size() > 0)
+                    if (CS[0][k].size() < CS[0][l].size() && isPrefix(CS[0][k], CS[0][l]))
                     {
-                        if (CS[0][k].size() < CS[0][l].size() && isPrefix(CS[0][k], CS[0][l]))
-                        {
-                            CS[0][k].clear();
-                            CS[0][k].shrink_to_fit();
-                        }
-                        else if (CS[0][l].size() < CS[0][k].size() && isPrefix(CS[0][l], CS[0][k]))
-                        {
-                            CS[0][l].clear();
-                            CS[0][l].shrink_to_fit();
-                        }
-                        else if (CS[0][l].size() == CS[0][k].size() && isPrefix(CS[0][l], CS[0][k]))
-                        {
-                            CS[0][l].clear();
-                            CS[0][l].shrink_to_fit();
-                        }
+                        CS[0][k].clear();
+                        CS[0][k].shrink_to_fit();
+                    }
+                    else if (CS[0][l].size() < CS[0][k].size() && isPrefix(CS[0][l], CS[0][k]))
+                    {
+                        CS[0][l].clear();
+                        CS[0][l].shrink_to_fit();
+                    }
+                    else if (CS[0][l].size() == CS[0][k].size() && isPrefix(CS[0][l], CS[0][k]))
+                    {
+                        CS[0][l].clear();
+                        CS[0][l].shrink_to_fit();
                     }
                 }
             }
         }
     }
 }
+
+// Similar to removePrefixes but with a different approach
 void removePrefixesClassic(vector<vector<vector<int>>>& CS)
 {
-
-
+    for (int k = 0; k < CS[0].size() - 1; k++)
     {
-
+        for (int l = k + 1; l < CS[0].size(); l++)
         {
-            for (int k = 0; k < CS[0].size() - 1; k++)
+            if (CS[0][k].size() > 0 && CS[0][l].size() > 0)
             {
-                for (int l = k + 1; l < CS[0].size(); l++)
+                if (CS[0][k].size() < CS[0][l].size() && isPrefix(CS[0][k], CS[0][l]))
                 {
-                    if (CS[0][k].size() > 0 && CS[0][l].size() > 0)
-                    {
-                        if (CS[0][k].size() < CS[0][l].size() && isPrefix(CS[0][k], CS[0][l]))
-                        {
-                            CS[0][k].clear();
-                            CS[0][k].shrink_to_fit();
-                        }
-                        else if (CS[0][l].size() < CS[0][k].size() && isPrefix(CS[0][l], CS[0][k]))
-                        {
-                            CS[0][l].clear();
-                            CS[0][l].shrink_to_fit();
-                        }
-                        else if (CS[0][l].size() == CS[0][k].size() && isPrefix(CS[0][l], CS[0][k]))
-                        {
-                            CS[0][l].clear();
-                            CS[0][l].shrink_to_fit();
-                        }
-                    }
+                    CS[0][k].clear();
+                    CS[0][k].shrink_to_fit();
+                }
+                else if (CS[0][l].size() < CS[0][k].size() && isPrefix(CS[0][l], CS[0][k]))
+                {
+                    CS[0][l].clear();
+                    CS[0][l].shrink_to_fit();
+                }
+                else if (CS[0][l].size() == CS[0][k].size() && isPrefix(CS[0][l], CS[0][k]))
+                {
+                    CS[0][l].clear();
+                    CS[0][l].shrink_to_fit();
                 }
             }
         }
     }
 }
+
+// Function to remove repeated sequences
 void RemoveRepeatations(vector<vector<vector<int>>>& CS)
 {
     for (int i = 0; i < CS.size() - 1; i++)
@@ -574,8 +592,9 @@ void RemoveRepeatations(vector<vector<vector<int>>>& CS)
             }
         }
     }
-
 }
+
+// Function to clear the CS (Characterizing Set) and shrink its memory by removing empty sets
 void clearCS(vector<vector<vector<int>>>& CS)
 {
     vector<vector<int>> WSet;
@@ -594,31 +613,28 @@ void clearCS(vector<vector<vector<int>>>& CS)
     CS.clear();
     CS.shrink_to_fit();
     CS.push_back(WSet);
-
 }
+
+// Similar to clearCS but with a different approach
 void clearCSClassic(vector<vector<vector<int>>>& CS)
 {
     vector<vector<int>> WSet;
 
+    for (int j = 0; j < CS[0].size(); j++)
     {
-        for (int j = 0; j < CS[0].size(); j++)
+        if (CS[0][j].size() > 0)
         {
-            if (CS[0][j].size() > 0)
-            {
-                WSet.push_back(CS[0][j]);
-                CS[0][j].clear();
-                CS[0][j].shrink_to_fit();
-            }
+            WSet.push_back(CS[0][j]);
+            CS[0][j].clear();
+            CS[0][j].shrink_to_fit();
         }
     }
     CS.clear();
     CS.shrink_to_fit();
     CS.push_back(WSet);
-
 }
 
-
-
+// Function to check if all edges have been visited
 bool checkPath()
 {
     for (int i = 0; i < edges.size(); i++)
@@ -632,6 +648,8 @@ bool checkPath()
     }
     return true;
 }
+
+// Function to get the count of free slots (unvisited edges) from a source state
 int getFreeSlotCount(int source)
 {
     int fc = 0;
@@ -642,6 +660,8 @@ int getFreeSlotCount(int source)
     }
     return fc;
 }
+
+// Function to get the next unvisited state
 int getNextUnvisitedState(int s)
 {
     for (int i = 0; i < edges.size(); i++)
@@ -653,6 +673,8 @@ int getNextUnvisitedState(int s)
         }
     }
 }
+
+// Function to add a pair to a list if it doesn't already exist
 void addIfNotExists(vector<pair<int, vector<int>>>& l, pair<int, vector<int>>& r)
 {
     if (l.size() == 0)
@@ -666,8 +688,9 @@ void addIfNotExists(vector<pair<int, vector<int>>>& l, pair<int, vector<int>>& r
         }
         l.push_back(r);
     }
-
 }
+
+// Recursive function to find the shortest path
 vector<int> recSP(vector<pair<int, vector<int>>>& n, int d)
 {
     vector<pair<int, vector<int>>> deepen;
@@ -694,6 +717,8 @@ vector<int> recSP(vector<pair<int, vector<int>>>& n, int d)
     else
         return recSP(deepen, d);
 }
+
+// Function to get the shortest path from source to destination
 vector<int> getSP(int s, int d)
 {
     pair<int, vector<int>> p;
@@ -702,8 +727,9 @@ vector<int> getSP(int s, int d)
     vector<pair<int, vector<int>>> t;
     t.push_back(p);
     return recSP(t, d);
-
 }
+
+// Breadth-First Search to find the shortest path
 vector<int> BFS(int s, int d)
 {
     if (s == d)
@@ -745,12 +771,15 @@ vector<int> BFS(int s, int d)
     }
     return vector<int>();
 }
+
+// Function to get the shortest path from a source state to the next unvisited state
 vector<int> getShortestPathFromSource(int s)
 {
     int d = getNextUnvisitedState(s);
     return getSP(s, d);
 }
 
+// Function to select the next input based on the maximum free slots
 int selectNextInput(int s)
 {
     int input = -1;
@@ -787,8 +816,7 @@ int selectNextInput(int s)
     }
 }
 
-
-
+// Function to construct an Eulerian path
 vector<int> constructEuler(int source, vector<vector<int>>& CS)
 {
     bool constructed = false;
@@ -825,11 +853,10 @@ vector<int> constructEuler(int source, vector<vector<int>>& CS)
 
     }
 
-
-
     return inputsOrder;
 }
 
+// Depth-First Search to find a path
 vector<int> DFS(int source)
 {  
     if (true)
@@ -863,7 +890,7 @@ vector<int> DFS(int source)
     return vector<int>();
 }
 
-
+// Function to calculate reaching sequences for all states
 vector<vector<int>> calculateReachingSequneces()
 {
     vector<vector<int>> seq;
@@ -881,6 +908,7 @@ vector<vector<int>> calculateReachingSequneces()
     return seq;
 }
 
+// Function to calculate transition identification sequences
 vector<vector<int>> calculateTransitionIdentifiationSequences(vector<vector<int>>& seq, vector<vector<vector<int>>>& CS)
 {
     vector<vector<int>>tc;
@@ -908,6 +936,8 @@ vector<vector<int>> calculateTransitionIdentifiationSequences(vector<vector<int>
     }
     return tc;
 }
+
+// Function to calculate state identification sequences
 vector<vector<int>> calculateStateIdentificationSequences(vector<vector<int>>& seq, vector<vector<vector<int>>>& CS)
 {
     vector<vector<int>> result;
@@ -926,6 +956,8 @@ vector<vector<int>> calculateStateIdentificationSequences(vector<vector<int>>& s
     }
     return result;
 }
+
+// Function to check if the FSM has an Eulerian path
 bool hasEuler()
 {
     int states = nextStates.size();
@@ -951,6 +983,8 @@ bool hasEuler()
 
     return true;
 }
+
+// Function to construct an ordered State Identification Sequence (SIS)
 vector<int> constructOrderedSIS(vector<vector<vector<int>>>& CS, int FSMInputs)
 {
     if (CS[0].size() == 0)
@@ -979,6 +1013,7 @@ vector<int> constructOrderedSIS(vector<vector<vector<int>>>& CS, int FSMInputs)
     return constructEuler(0, CS[0]);
 }
 
+// Function to calculate the characterizing set from SIS and TIS
 vector<vector<int>> calculateCharacterisingSet(vector<vector<int>>& sis, vector<vector<int>>& tis)
 {
     vector<vector<int>> ttis = sis;
@@ -1008,6 +1043,8 @@ vector<vector<int>> calculateCharacterisingSet(vector<vector<int>>& sis, vector<
     }
     return W;
 }
+
+// Overloaded function to calculate the characterizing set from SIS and TIS
 vector<vector<int>> calculateCharacterisingSet(vector<int>& sis, vector<vector<int>>& tis)
 {
     vector<vector<int>> ttis;
@@ -1039,6 +1076,7 @@ vector<vector<int>> calculateCharacterisingSet(vector<int>& sis, vector<vector<i
     return W;
 }
 
+// Function to get the total length of a set of sequences
 int getLength(vector<vector<int>>& v)
 {
     int result = 0;
@@ -1048,9 +1086,10 @@ int getLength(vector<vector<int>>& v)
     }
     return result;
 }
+
+// Function to check if a sequence is a prefix of any sequence in a set
 bool isFamily(vector<vector<int>>& v1, vector<int>& v2)
 {
-
     for (int i = 0; i < v1.size(); i++)
     {
         if (isLinR(v2, v1[i]))
@@ -1060,6 +1099,8 @@ bool isFamily(vector<vector<int>>& v1, vector<int>& v2)
     }
     return false;
 }
+
+// Function to get the number of occurrences of a sequence in a set
 int GetOccurrance(int l, vector<int>& myString, vector<vector<vector<int>>>& SSCondesed)
 {
     int observed = 0;
@@ -1076,10 +1117,11 @@ int GetOccurrance(int l, vector<int>& myString, vector<vector<vector<int>>>& SSC
     }
     return observed;
 }
+
+// Function to get the number of prefixes of a sequence in a set
 int GetPrefix(int l, vector<int>& myString, vector<vector<vector<int>>>& SSCondesed)
 {
     int observed = 0;
-
 
     for (int j = 0; j < SSCondesed[0].size(); j++)
     {
@@ -1087,9 +1129,10 @@ int GetPrefix(int l, vector<int>& myString, vector<vector<vector<int>>>& SSConde
             observed++;
     }
 
-
     return observed;
 }
+
+// Function to get the separating input for two states
 int getSepInfo(int i, int j)
 {
     vector<int> sepIn;
@@ -1103,6 +1146,8 @@ int getSepInfo(int i, int j)
     else
         return sepIn[rand() % sepIn.size()];
 }
+
+// Function to check if a sequence separates two states
 bool separates(int i, int j, vector<int>& seq)
 {
     int o1 = -1;
@@ -1123,777 +1168,756 @@ bool separates(int i, int j, vector<int>& seq)
     return true;
 }
 
+// Overloaded function to check if an input separates two states
 bool separates(int in, int s1, int s2)
 {
     if (observedOutputs[s1][in] != observedOutputs[s2][in])
         return true;
 }
 
-
+// Main function
 int main()
 {
-
-
     int st;
-
-    
     srand(time(0));
     
-        FSMid = 0, FSMStates = 0, FSMSize = 0, FSMInputs = 0, FSMOutputs = 0, dv = 0;
-        int currentState = 0, nextState = 0, currentInput = 0, currentOutput = 0;
-        
-       
-        int counter = 0;
-        
-            int it = 0;
-            
-         
-                    cout << "Enter FSM file name" << endl;
-                    string FSM_File_Name;
-                    cin >> FSM_File_Name;
-                    string StatF = FSM_File_Name + "Stat.txt";
-                    string SeqF = FSM_File_Name + "Seq.txt";
-                    ofstream writeStatFile(StatF);
-                    ofstream writeSeqFile(SeqF);
-                    FSM_File_Name+=".txt";
-     
-                    writeStatFile << "FSM_ID FSMStates FSMInputs FSMOutputs FSMSize W_Time W_Memory SIS_Tr SIS_Size SIS_Cost TS_Size TS_Cost Algorithm" << endl;
-                    writeSeqFile << "FSM_ID FSMStates FSMInputs FSMOutputs FSMSize Ordered_WSequences --- Classic_WSequences --- Ordered_CSSequences --- Classic_CSSequences" << endl;
+    FSMid = 0, FSMStates = 0, FSMSize = 0, FSMInputs = 0, FSMOutputs = 0, dv = 0;
+    int currentState = 0, nextState = 0, currentInput = 0, currentOutput = 0;
+    int counter = 0;
+    int it = 0;
 
-                    ifstream reader(FSM_File_Name);
-                    FSMid = 0, FSMStates = 0, FSMSize = 0, FSMInputs = 0, FSMOutputs = 0, dv = 0;
-                    currentState = 0, nextState = 0, currentInput = 0, currentOutput = 0;
-                    while (!reader.eof())
+    cout << "Enter FSM file name" << endl;
+    string FSM_File_Name;
+    cin >> FSM_File_Name;
+    string StatF = FSM_File_Name + "Stat.txt";
+    string SeqF = FSM_File_Name + "Seq.txt";
+    ofstream writeStatFile(StatF);
+    ofstream writeSeqFile(SeqF);
+    FSM_File_Name+=".txt";
+
+    writeStatFile << "FSM_ID FSMStates FSMInputs FSMOutputs FSMSize W_Time W_Memory SIS_Tr SIS_Size SIS_Cost TS_Size TS_Cost Algorithm" << endl;
+    writeSeqFile << "FSM_ID FSMStates FSMInputs FSMOutputs FSMSize Ordered_WSequences --- Classic_WSequences --- Ordered_CSSequences --- Classic_CSSequences" << endl;
+
+    ifstream reader(FSM_File_Name);
+    FSMid = 0, FSMStates = 0, FSMSize = 0, FSMInputs = 0, FSMOutputs = 0, dv = 0;
+    currentState = 0, nextState = 0, currentInput = 0, currentOutput = 0;
+    while (!reader.eof())//parse FSM
+    {
+        reader >> FSMid >> FSMStates >> FSMSize >> FSMInputs >> FSMOutputs >> dv;
+
+        vector<int> temp;
+        temp.resize(FSMInputs);
+        temp.assign(FSMInputs, -1);
+
+        nextStates.resize(FSMStates);
+        nextStates.assign(FSMStates, temp); 
+
+        observedOutputs.resize(FSMStates);
+        observedOutputs.assign(FSMStates, temp);
+
+        pairCount = FSMStates * (FSMStates - 1) / 2;
+        separatingSequences.resize(pairCount);
+
+        int counter = 0;
+        bool partial = false;
+        while (counter < FSMSize)
+        {
+            char input;
+            reader >> currentState >> nextState >> input >> currentOutput;
+
+            currentInput = int(input - 97);
+            currentState--; nextState--;
+            if (currentState < 0 || nextState<0)
+            {
+                partial = true;
+            }
+            else {
+                nextStates[currentState][currentInput] = nextState;
+                observedOutputs[currentState][currentInput] = currentOutput;
+            }
+
+            counter++;
+        }
+
+        vector<int> activeStates;
+        for (int l = 0; l < FSMStates && !partial; l++)
+            activeStates.push_back(l);
+
+        vector<pair<int, int>> Origin;
+        vector<pair< vector<pair<int, int>>, vector<int>>>classes;
+        vector<vector<vector<int>>> CS;
+        CS.resize(FSMStates);
+        auto start_T_time = std::chrono::high_resolution_clock::now();
+        ///////////////////////ORDERED STARTS HERE/////////////////////////
+        for (int l = 0; l < FSMInputs && !partial; l++)
+        {
+            Origin = separates(activeStates, l);//returns set of states that are seperable by one input
+            vector<int>inputSequence;
+            inputSequence.push_back(l);
+            classes.push_back(pair< vector<pair<int, int>>, vector<int>>(Origin, inputSequence));
+        }
+        int itC = 0;
+
+        for (int l = 0; itC<5 && pairCount >0 && !partial; l++)
+        {
+            itC++;
+            for (int m = 0; m < FSMInputs; m++)
+            {
+                classes.push_back(incrementAClass(classes[l], m));
+            }
+
+        }
+        if (pairCount > 0 && !partial)//if FSM is not minimal
+        {
+            separatingSequences.clear();
+            separatingSequences.shrink_to_fit();
+
+            Origin.clear();
+            Origin.clear();
+            CS.clear();
+            CS.shrink_to_fit();
+            classes.clear();
+            classes.shrink_to_fit();
+            activeStates.clear();
+            activeStates.shrink_to_fit();
+        }
+        else//otherwise
+        {
+            vector<vector<vector<int>>> SSCondesed;
+            for (int l = 0; l < FSMStates - 1; l++)
+            {
+                int startingIndex = returnPairIndex(l, l + 1, FSMStates);
+                int endingIndex = returnPairIndex(l, FSMStates - 1, FSMStates);
+                vector<vector<vector<int>>> tempS;
+                tempS.resize(1);
+                for (int m = startingIndex; m <= endingIndex; m++)
+                {
+                    int t = getOrderingSequence(separatingSequences[m]);
+                    if (t == -1)
+                    {
+                        m = endingIndex;
+                        l = FSMStates;
+                        break;
+                    }
+                    else
+                    {
+                        tempS[0].push_back(separatingSequences[m][t]);
+                    }
+
+                }
+                removePrefixesClassic(tempS);
+                clearCSClassic(tempS);
+                SSCondesed.push_back(tempS[0]);
+                tempS.clear();
+                tempS.shrink_to_fit();
+            }
+            bool end = false;
+            vector<int> oSIS;
+            int trialCounter = 0;
+            int trialMX = 40;
+            bool fail = false;
+            while (!end && SSCondesed.size()>0)
+            {
+
+                for (int l = 0; l < SSCondesed.size(); l++)
+                {
+                    if (l == 2)
+                        int asd = 0;
+                    if (SSCondesed[l].size() == 1)
+                    {
+                        CS[0].push_back(SSCondesed[l][0]);
+                    }
+                    else
                     {
 
-        
-                        reader >> FSMid >> FSMStates >> FSMSize >> FSMInputs >> FSMOutputs >> dv;
+                        int occurrenceIndex = -1;
+                        int mOccurrence = -1;
+                        int prefixIndex = -1;
+                        int mPrefix = -1;
 
-                        vector<int> temp;
-                        temp.resize(FSMInputs);
-                        temp.assign(FSMInputs, -1);
-        
-                        nextStates.resize(FSMStates);
-                        nextStates.assign(FSMStates, temp); 
-        
-                        observedOutputs.resize(FSMStates);
-                        observedOutputs.assign(FSMStates, temp);
-        
-                        pairCount = FSMStates * (FSMStates - 1) / 2;
-                        separatingSequences.resize(pairCount);
-
-                        int counter = 0;
-                        bool partial = false;
-                        while (counter < FSMSize)
+                        for (int m = 0; m < SSCondesed[l].size(); m++)
                         {
-                            char input;
-                            reader >> currentState >> nextState >> input >> currentOutput;
-                           
-                            currentInput = int(input - 97);
-                            currentState--; nextState--;
-                            if (currentState < 0 || nextState<0)
+
+                            vector<int> myString = SSCondesed[l][m];
+                            if (myString.size() > 0)
                             {
-                                
-                                partial = true;
-                             
-                            }
-                            else {
-                                nextStates[currentState][currentInput] = nextState;
-                                observedOutputs[currentState][currentInput] = currentOutput;
+                                int occurrance = GetOccurrance(l, myString, SSCondesed);
+                                int beingPrefix = GetPrefix(l, myString, CS);
+                                if (occurrance + beingPrefix > mOccurrence)
+                                {
+                                    mOccurrence = occurrance + beingPrefix;
+                                    occurrenceIndex = m;
+                                }
+
                             }
 
-                            counter++;
                         }
-                            
-                            vector<int> activeStates;
-                            for (int l = 0; l < FSMStates && !partial; l++)
-                                activeStates.push_back(l);
+                        if (occurrenceIndex >= 0)
+                        {
+                            CS[0].push_back(SSCondesed[l][occurrenceIndex]);
+                            SSCondesed[l][occurrenceIndex].clear();
+                            SSCondesed[l][occurrenceIndex].shrink_to_fit();
+                        }
 
-                            vector<pair<int, int>> Origin;
-                            vector<pair< vector<pair<int, int>>, vector<int>>>classes;
-                            vector<vector<vector<int>>> CS;
-                            CS.resize(FSMStates);
-                            auto start_T_time = std::chrono::high_resolution_clock::now();
-                            ///////////////////////ORDERED STARTS HERE/////////////////////////
-                            for (int l = 0; l < FSMInputs && !partial; l++)
+                        else
+                        {
+                            end = true;
+                        }
+                    }
+                }
+                if (CS.size() == 0 || CS[0].size() == 0)
+                    ;
+                else
+                {
+                    removePrefixes(CS);
+                    clearCS(CS);
+
+                    bool add = true;
+                    for (int ll = 0; ll < FSMStates - 1; ll++)
+                    {
+                        for (int mm = ll + 1; mm < FSMStates; mm++)
+                        {
+                            bool seps = false;
+                            for (int jj = 0; jj < CS[0].size() && !seps; jj++)
                             {
-                                Origin = separates(activeStates, l);//returns set of states that 
-                                vector<int>inputSequence;
-                                inputSequence.push_back(l);
-                                classes.push_back(pair< vector<pair<int, int>>, vector<int>>(Origin, inputSequence));
+                                seps = separates(ll, mm, CS[0][jj]);
                             }
-                            int itC = 0;
-
-                            for (int l = 0; itC<5 && pairCount >0 && !partial; l++)
+                            if (seps == false)
                             {
-                                itC++;
-                                for (int m = 0; m < FSMInputs; m++)
+                                add = false;
+                            }
+                        }
+                    }
+                    if (add)
+                        oSIS = constructOrderedSIS(CS, FSMInputs);
+                }
+
+                if (oSIS.size() > 0)
+                {
+                    end = true;
+                }
+                else
+                {
+                    oSIS.clear();
+                    oSIS.shrink_to_fit();
+                    if (CS.size() > 0)
+                    {
+                        CS[0].clear();
+                        CS[0].shrink_to_fit();
+                    }
+
+                }
+                trialCounter++;
+                if (trialCounter > trialMX)
+                    fail = true;
+            }
+            if (!fail)
+            {
+                vector<vector<vector<int>>> CSO;
+                vector<vector<vector<int>>> CSN;
+                vector<vector<vector<int>>> CSM;
+
+                separatingSequences.clear();
+                separatingSequences.shrink_to_fit();
+
+                if (oSIS.size() > 0)
+                {
+                    CSO = CS;
+                    vector<vector<int>> WN;
+                    vector<vector<int>> WO;
+                    vector<vector<int>> WM;
+                    vector<vector<int>> reachingSequences = calculateReachingSequneces();
+                    vector<vector<int>> tis = calculateTransitionIdentifiationSequences(reachingSequences, CS);
+                    vector<vector<int>> sis;
+
+                    int OtisS = 0;
+                    for (int fg = 0; fg < tis.size(); fg++)
+                        OtisS += tis[fg].size();
+                    int OsisS = oSIS.size();
+
+                    int otiscount = tis.size();
+                    int osiscount = 1;
+                    WO = calculateCharacterisingSet(oSIS, tis);
+                    double memoryO = getUsedMemoryMB();
+                    auto end_T_time = std::chrono::high_resolution_clock::now();
+                    auto OTime_T2 = end_T_time - start_T_time;
+                    float t_T1 = OTime_T2 / std::chrono::milliseconds(1);
+                    ///////////////////////ORDERED ENDS HERE/////////////////////////
+
+                    separatingSequences.clear();
+                    separatingSequences.shrink_to_fit();
+                    pairCount = FSMStates * (FSMStates - 1) / 2;
+                    separatingSequences.resize(pairCount);
+                    reachingSequences.clear();
+                    reachingSequences.shrink_to_fit();
+                    tis.clear();
+                    tis.shrink_to_fit();
+                    sis.clear();
+                    sis.shrink_to_fit();
+                    oSIS.clear();
+                    oSIS.shrink_to_fit();
+
+                    CS.clear();
+                    CS.shrink_to_fit();
+
+                    activeStates.clear();
+                    activeStates.shrink_to_fit();
+
+                    for (int l = 0; l < FSMStates; l++)
+                        activeStates.push_back(l);
+                    Origin.clear();
+                    Origin.shrink_to_fit();
+                    classes.clear();
+                    classes.shrink_to_fit();
+                    CS.resize(FSMStates);
+
+                    auto start_classic_T_time = std::chrono::high_resolution_clock::now();
+                    ///////////////////////CLASSIC STARTS HERE/////////////////////////
+                    vector< pair<pair<int, int>, vector<int>>> splittingInfo;
+                    for (int l = 0; l < FSMStates - 1; l++)
+                    {
+                        for (int m = l + 1; m < FSMStates; m++)
+                        {
+                            int input = getSepInfo(l, m);
+                            if (input >= 0)
+                            {
+                                pair<int, int> st;
+                                st.first = l;
+                                st.second = m;
+                                pair< pair<int, int>, vector<int>> sep;
+                                sep.first = st;
+                                vector<int> in;
+                                in.push_back(input);
+                                CS[0].push_back(in);
+                                sep.second = in;
+                                splittingInfo.push_back(sep);
+                                int index = returnPairIndex(l, m, observedOutputs.size());
+                                if (separatingSequences[index].size() == 0)
                                 {
-                                    classes.push_back(incrementAClass(classes[l], m));
+                                    pairCount--;
+                                    separatingSequences[index].push_back(in);
                                 }
 
                             }
-                            if (pairCount > 0 && !partial)//if FSM is not minimal
+                        }
+                    }
+                    while (pairCount > 0)
+                    {
+                        for (int l = 0; l < FSMStates - 1; l++)
+                        {
+                            for (int m = l + 1; m < FSMStates; m++)
                             {
-                                separatingSequences.clear();
-                                separatingSequences.shrink_to_fit();
-
-                                Origin.clear();
-                                Origin.clear();
-                                CS.clear();
-                                CS.shrink_to_fit();
-                                classes.clear();
-                                classes.shrink_to_fit();
-                                activeStates.clear();
-                                activeStates.shrink_to_fit();
-                            }
-                            else//otherwise
-                            {
-                                vector<vector<vector<int>>> SSCondesed;
-                                for (int l = 0; l < FSMStates - 1; l++)
+                                int index = returnPairIndex(l, m, observedOutputs.size());
+                                if (separatingSequences[index].size() == 0)
                                 {
-                                    int startingIndex = returnPairIndex(l, l + 1, FSMStates);
-                                    int endingIndex = returnPairIndex(l, FSMStates - 1, FSMStates);
-                                    vector<vector<vector<int>>> tempS;
-                                    tempS.resize(1);
-                                    for (int m = startingIndex; m <= endingIndex; m++)
+                                    vector<int> divider;
+                                    for (int n = 0; n < FSMInputs; n++)
                                     {
-                                        int t = getOrderingSequence(separatingSequences[m]);
-                                        if (t == -1)
+                                        int ns1 = nextStates[l][n];
+                                        int ns2 = nextStates[m][n];
+                                        if (ns1 > ns2)
                                         {
-                                            m = endingIndex;
-                                            l = FSMStates;
-                                            break;
+                                            int t = ns1;
+                                            ns1 = ns2;
+                                            ns2 = t;
+                                        }
+
+                                        if (ns1 == ns2)
+                                        {
+                                            ;
                                         }
                                         else
                                         {
-                                            tempS[0].push_back(separatingSequences[m][t]);
+                                            int nIndex = returnPairIndex(ns1, ns2, nextStates.size());
+                                            if (separatingSequences[nIndex].size() > 0)
+                                            {
+                                                divider.push_back(n);
+                                            }
                                         }
 
                                     }
-                                    removePrefixesClassic(tempS);
-                                    clearCSClassic(tempS);
-                                    SSCondesed.push_back(tempS[0]);
-                                    tempS.clear();
-                                    tempS.shrink_to_fit();
-                                }
-                                bool end = false;
-                                vector<int> oSIS;
-                                int trialCounter = 0;
-                                int trialMX = 40;
-                                bool fail = false;
-                                while (!end && SSCondesed.size()>0)
-                                {
-
-                                    for (int l = 0; l < SSCondesed.size(); l++)
+                                    if (divider.size() > 0)
                                     {
-                                        if (l == 2)
-                                            int asd = 0;
-                                        if (SSCondesed[l].size() == 1)
+                                        int input = divider[rand() % divider.size()];
+                                        int ns1 = nextStates[l][input];
+                                        int ns2 = nextStates[m][input];
+                                        if (ns1 > ns2)
                                         {
-                                            CS[0].push_back(SSCondesed[l][0]);
+                                            int t = ns1;
+                                            ns1 = ns2;
+                                            ns2 = t;
+                                        }
+                                        if (ns1 == ns2)
+                                        {
+                                            ;
                                         }
                                         else
                                         {
-
-                                            int occurrenceIndex = -1;
-                                            int mOccurrence = -1;
-                                            int prefixIndex = -1;
-                                            int mPrefix = -1;
-
-                                            for (int m = 0; m < SSCondesed[l].size(); m++)
+                                            int nIndex = returnPairIndex(ns1, ns2, nextStates.size());
+                                            vector<int>prevSeq;
+                                            prevSeq.push_back(input);
+                                            for (int o = 0; o < separatingSequences[nIndex][0].size(); o++)
                                             {
-
-                                                vector<int> myString = SSCondesed[l][m];
-                                                if (myString.size() > 0)
-                                                {
-                                                    int occurrance = GetOccurrance(l, myString, SSCondesed);
-                                                    int beingPrefix = GetPrefix(l, myString, CS);
-                                                    if (occurrance + beingPrefix > mOccurrence)
-                                                    {
-                                                        mOccurrence = occurrance + beingPrefix;
-                                                        occurrenceIndex = m;
-                                                    }
-
-                                                }
-
+                                                prevSeq.push_back(separatingSequences[nIndex][0][o]);
                                             }
-                                            if (occurrenceIndex >= 0)
-                                            {
-                                                CS[0].push_back(SSCondesed[l][occurrenceIndex]);
-                                                SSCondesed[l][occurrenceIndex].clear();
-                                                SSCondesed[l][occurrenceIndex].shrink_to_fit();
-                                            }
-
-                                            else
-                                            {
-                                                end = true;
-                                            }
+                                            if (prevSeq.size() == 0)
+                                                int ne = 0;
+                                            pairCount--;
+                                            separatingSequences[index].push_back(prevSeq);
+                                            CS[0].push_back(prevSeq);
+                                            pair<int, int> st;
+                                            st.first = l;
+                                            st.second = m;
+                                            pair< pair<int, int>, vector<int>> sep;
+                                            sep.first = st;
+                                            sep.second = prevSeq;
+                                            splittingInfo.push_back(sep);
                                         }
                                     }
-                                    if (CS.size() == 0 || CS[0].size() == 0)
+                                    else
                                         ;
-                                    else
-                                    {
-                                        removePrefixes(CS);
-                                        clearCS(CS);
-                                        
-                                        bool add = true;
-                                        for (int ll = 0; ll < FSMStates - 1; ll++)
-                                        {
-                                            for (int mm = ll + 1; mm < FSMStates; mm++)
-                                            {
-                                                bool seps = false;
-                                                for (int jj = 0; jj < CS[0].size() && !seps; jj++)
-                                                {
-                                                    seps = separates(ll, mm, CS[0][jj]);
-                                                }
-                                                if (seps == false)
-                                                {
-                                                    add = false;
-                                                }
-                                            }
-                                        }
-                                        if (add)
-                                            oSIS = constructOrderedSIS(CS, FSMInputs);
-                                    }
 
-
-                                    if (oSIS.size() > 0)
-                                    {
-
-                                        end = true;
-                                    }
-                                    else
-                                    {
-                                        oSIS.clear();
-                                        oSIS.shrink_to_fit();
-                                        if (CS.size() > 0)
-                                        {
-                                            CS[0].clear();
-                                            CS[0].shrink_to_fit();
-                                        }
-
-                                    }
-                                    trialCounter++;
-                                    if (trialCounter > trialMX)
-                                        fail = true;
+                                    divider.clear();
+                                    divider.shrink_to_fit();
                                 }
-                                if (!fail)
-                                {
-                                
-                                    vector<vector<vector<int>>> CSO;
-                                    vector<vector<vector<int>>> CSN;
-                                    vector<vector<vector<int>>> CSM;
-
-
-                                    separatingSequences.clear();
-                                    separatingSequences.shrink_to_fit();
-                                    
-                                    if (oSIS.size() > 0)
-                                    {
-                                        CSO = CS;
-                                        vector<vector<int>> WN;
-                                        vector<vector<int>> WO;
-                                        vector<vector<int>> WM;
-                                        vector<vector<int>> reachingSequences = calculateReachingSequneces();
-                                        vector<vector<int>> tis = calculateTransitionIdentifiationSequences(reachingSequences, CS);
-                                        vector<vector<int>> sis;
-                                        
-                                        int OtisS = 0;
-                                        for (int fg = 0; fg < tis.size(); fg++)
-                                            OtisS += tis[fg].size();
-                                        int OsisS = oSIS.size();
-
-                                        int otiscount = tis.size();
-                                        int osiscount = 1;
-                                        WO = calculateCharacterisingSet(oSIS, tis);
-                                        double memoryO = getUsedMemoryMB();
-                                        auto end_T_time = std::chrono::high_resolution_clock::now();
-                                        auto OTime_T2 = end_T_time - start_T_time;
-                                        float t_T1 = OTime_T2 / std::chrono::milliseconds(1);
-                                        ///////////////////////ORDERED ENDS HERE/////////////////////////
-
-                                        separatingSequences.clear();
-                                        separatingSequences.shrink_to_fit();
-                                        pairCount = FSMStates * (FSMStates - 1) / 2;
-                                        separatingSequences.resize(pairCount);
-                                        reachingSequences.clear();
-                                        reachingSequences.shrink_to_fit();
-                                        tis.clear();
-                                        tis.shrink_to_fit();
-                                        sis.clear();
-                                        sis.shrink_to_fit();
-                                        oSIS.clear();
-                                        oSIS.shrink_to_fit();
-
-
-                                        CS.clear();
-                                        CS.shrink_to_fit();
-
-                                        activeStates.clear();
-                                        activeStates.shrink_to_fit();
-
-                                        for (int l = 0; l < FSMStates; l++)
-                                            activeStates.push_back(l);
-                                        Origin.clear();
-                                        Origin.shrink_to_fit();
-                                        classes.clear();
-                                        classes.shrink_to_fit();
-                                        CS.resize(FSMStates);
-
-                                        auto start_classic_T_time = std::chrono::high_resolution_clock::now();
-                                        ///////////////////////CLASSIC STARTS HERE/////////////////////////
-                                        vector< pair<pair<int, int>, vector<int>>> splittingInfo;
-                                        for (int l = 0; l < FSMStates - 1; l++)
-                                        {
-                                            for (int m = l + 1; m < FSMStates; m++)
-                                            {
-                                                int input = getSepInfo(l, m);
-                                                if (input >= 0)
-                                                {
-                                                    pair<int, int> st;
-                                                    st.first = l;
-                                                    st.second = m;
-                                                    pair< pair<int, int>, vector<int>> sep;
-                                                    sep.first = st;
-                                                    vector<int> in;
-                                                    in.push_back(input);
-                                                    CS[0].push_back(in);
-                                                    sep.second = in;
-                                                    splittingInfo.push_back(sep);
-                                                    int index = returnPairIndex(l, m, observedOutputs.size());
-                                                    if (separatingSequences[index].size() == 0)
-                                                    {
-                                                        pairCount--;
-                                                        separatingSequences[index].push_back(in);
-                                                    }
-
-                                                }
-                                            }
-                                        }
-                                        while (pairCount > 0)
-                                        {
-                                            for (int l = 0; l < FSMStates - 1; l++)
-                                            {
-                                                for (int m = l + 1; m < FSMStates; m++)
-                                                {
-                                                    int index = returnPairIndex(l, m, observedOutputs.size());
-                                                    if (separatingSequences[index].size() == 0)
-                                                    {
-                                                        vector<int> divider;
-                                                        for (int n = 0; n < FSMInputs; n++)
-                                                        {
-                                                            int ns1 = nextStates[l][n];
-                                                            int ns2 = nextStates[m][n];
-                                                            if (ns1 > ns2)
-                                                            {
-                                                                int t = ns1;
-                                                                ns1 = ns2;
-                                                                ns2 = t;
-                                                            }
-
-                                                            if (ns1 == ns2)
-                                                            {
-                                                                ;
-                                                            }
-                                                            else
-                                                            {
-                                                                int nIndex = returnPairIndex(ns1, ns2, nextStates.size());
-                                                                if (separatingSequences[nIndex].size() > 0)
-                                                                {
-                                                                    divider.push_back(n);
-                                                                }
-                                                            }
-
-                                                        }
-                                                        if (divider.size() > 0)
-                                                        {
-                                                            int input = divider[rand() % divider.size()];
-                                                            int ns1 = nextStates[l][input];
-                                                            int ns2 = nextStates[m][input];
-                                                            if (ns1 > ns2)
-                                                            {
-                                                                int t = ns1;
-                                                                ns1 = ns2;
-                                                                ns2 = t;
-                                                            }
-                                                            if (ns1 == ns2)
-                                                            {
-                                                                ;
-                                                            }
-                                                            else
-                                                            {
-                                                                int nIndex = returnPairIndex(ns1, ns2, nextStates.size());
-                                                                vector<int>prevSeq;
-                                                                prevSeq.push_back(input);
-                                                                for (int o = 0; o < separatingSequences[nIndex][0].size(); o++)
-                                                                {
-                                                                    prevSeq.push_back(separatingSequences[nIndex][0][o]);
-                                                                }
-                                                                if (prevSeq.size() == 0)
-                                                                    int ne = 0;
-                                                                pairCount--;
-                                                                separatingSequences[index].push_back(prevSeq);
-                                                                CS[0].push_back(prevSeq);
-                                                                pair<int, int> st;
-                                                                st.first = l;
-                                                                st.second = m;
-                                                                pair< pair<int, int>, vector<int>> sep;
-                                                                sep.first = st;
-                                                                sep.second = prevSeq;
-                                                                splittingInfo.push_back(sep);
-                                                            }
-                                                        }
-                                                        else
-                                                            ;
-
-                                                        divider.clear();
-                                                        divider.shrink_to_fit();
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        separatingSequences.clear();
-                                        splittingInfo.clear();
-                                        splittingInfo.shrink_to_fit();
-                                        separatingSequences.shrink_to_fit();
-                                        removePrefixesClassic(CS);
-                                        clearCSClassic(CS);
-                                        reachingSequences = calculateReachingSequneces();
-                                       
-                                        CSN = CS;
-                                        tis = calculateTransitionIdentifiationSequences(reachingSequences, CS);
-                                        sis = calculateStateIdentificationSequences(reachingSequences, CS);
-                                        int NtisS = 0;
-                                        for (int fg = 0; fg < tis.size(); fg++)
-                                            NtisS += tis[fg].size();
-                                        int NsisS = 0;
-                                        for (int fg = 0; fg < sis.size(); fg++)
-                                            NsisS += sis[fg].size();
-                                        int ntiscount = tis.size();
-                                        int nsiscount = sis.size();
-                                        classes.clear();
-                                        classes.shrink_to_fit();
-                                        Origin.clear();
-                                        Origin.shrink_to_fit();
-                                        WN = calculateCharacterisingSet(sis, tis);
-                                        double memoryC = getUsedMemoryMB();
-                                        auto end_classic_T_time = std::chrono::high_resolution_clock::now();
-                                        auto classicTime_T2 = end_classic_T_time - start_classic_T_time;
-                                        float t_T2 = classicTime_T2 / std::chrono::milliseconds(1);
-                                        ///////////////////////CLASSIC ENDs HERE/////////////////////////
-
-                                        separatingSequences.clear();
-                                        separatingSequences.shrink_to_fit();
-                                        pairCount = FSMStates * (FSMStates - 1) / 2;
-                                        separatingSequences.resize(pairCount);
-                                        reachingSequences.clear();
-                                        reachingSequences.shrink_to_fit();
-                                        tis.clear();
-                                        tis.shrink_to_fit();
-                                        sis.clear();
-                                        sis.shrink_to_fit();
-                                        oSIS.clear();
-                                        oSIS.shrink_to_fit();
-
-
-                                        CS.clear();
-                                        CS.shrink_to_fit();
-
-                                        activeStates.clear();
-                                        activeStates.shrink_to_fit();
-
-                                        for (int l = 0; l < FSMStates; l++)
-                                            activeStates.push_back(l);
-                                        Origin.clear();
-                                        Origin.shrink_to_fit();
-                                        classes.clear();
-                                        classes.shrink_to_fit();
-                                        CS.resize(FSMStates);
-                                        splittingInfo.clear();
-                                        splittingInfo.shrink_to_fit();
-                                        auto start_min_T_time = std::chrono::high_resolution_clock::now();
-                                        ///////////////////////Min STARTS HERE/////////////////////////
-                                       
-                                        for (int l = 0; l < FSMStates - 1; l++)
-                                        {
-                                            for (int m = l + 1; m < FSMStates; m++)
-                                            {
-                                                int input = getSepInfo(l, m);
-                                                if (input >= 0)
-                                                {
-                                                    pair<int, int> st;
-                                                    st.first = l;
-                                                    st.second = m;
-                                                    pair< pair<int, int>, vector<int>> sep;
-                                                    sep.first = st;
-                                                    vector<int> in;
-                                                    in.push_back(input);
-                                                    CS[0].push_back(in);
-                                                    sep.second = in;
-                                                    splittingInfo.push_back(sep);
-                                                    int index = returnPairIndex(l, m, observedOutputs.size());
-                                                    if (separatingSequences[index].size() == 0)
-                                                    {
-                                                        pairCount--;
-                                                        separatingSequences[index].push_back(in);
-                                                    }
-                                                    for (int n = l; n < FSMStates - 1; n++)
-                                                    {
-                                                        for (int o = m + 1; o < FSMStates; o++)
-                                                        {
-                                                            if (separates(input, n, o))
-                                                            {
-                                                                pair<int, int> sts;
-                                                                sts.first = n;
-                                                                sts.second = o;
-                                                                pair< pair<int, int>, vector<int>> seps;
-                                                                seps.first = st;
-                                                                seps.second = in;
-                                                                splittingInfo.push_back(seps);
-                                                                int indexs = returnPairIndex(n, o, observedOutputs.size());
-                                                                if (separatingSequences[indexs].size() == 0)
-                                                                {
-                                                                    pairCount--;
-                                                                    separatingSequences[indexs].push_back(in);
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        while (pairCount > 0)
-                                        {
-                                            for (int l = 0; l < FSMStates - 1; l++)
-                                            {
-                                                for (int m = l + 1; m < FSMStates; m++)
-                                                {
-                                                    int index = returnPairIndex(l, m, observedOutputs.size());
-                                                    if (separatingSequences[index].size() == 0)
-                                                    {
-                                                        vector<int> divider;
-                                                        for (int n = 0; n < FSMInputs; n++)
-                                                        {
-                                                            int ns1 = nextStates[l][n];
-                                                            int ns2 = nextStates[m][n];
-                                                            if (ns1 > ns2)
-                                                            {
-                                                                int t = ns1;
-                                                                ns1 = ns2;
-                                                                ns2 = t;
-                                                            }
-
-                                                            if (ns1 == ns2)
-                                                            {
-                                                                ;
-                                                            }
-                                                            else
-                                                            {
-                                                                int nIndex = returnPairIndex(ns1, ns2, nextStates.size());
-                                                                if (separatingSequences[nIndex].size() > 0)
-                                                                {
-                                                                    divider.push_back(n);
-                                                                }
-                                                            }
-
-                                                        }
-                                                        if (divider.size() > 0)
-                                                        {
-                                                            int input = divider[rand() % divider.size()];
-                                                            int ns1 = nextStates[l][input];
-                                                            int ns2 = nextStates[m][input];
-                                                            if (ns1 > ns2)
-                                                            {
-                                                                int t = ns1;
-                                                                ns1 = ns2;
-                                                                ns2 = t;
-                                                            }
-                                                            if (ns1 == ns2)
-                                                            {
-                                                                ;
-                                                            }
-                                                            else
-                                                            {
-                                                                int nIndex = returnPairIndex(ns1, ns2, nextStates.size());
-                                                                vector<int>prevSeq;
-                                                                prevSeq.push_back(input);
-                                                                for (int o = 0; o < separatingSequences[nIndex][0].size(); o++)
-                                                                {
-                                                                    prevSeq.push_back(separatingSequences[nIndex][0][o]);
-                                                                }
-                                                                if (prevSeq.size() == 0)
-                                                                    int ne = 0;
-                                                                pairCount--;
-                                                                separatingSequences[index].push_back(prevSeq);
-                                                                CS[0].push_back(prevSeq);
-                                                                pair<int, int> st;
-                                                                st.first = l;
-                                                                st.second = m;
-                                                                pair< pair<int, int>, vector<int>> sep;
-                                                                sep.first = st;
-                                                                sep.second = prevSeq;
-                                                                splittingInfo.push_back(sep);
-                                                            }
-                                                        }
-                                                        else
-                                                            ;
-
-                                                        divider.clear();
-                                                        divider.shrink_to_fit();
-                                                    }
-                                                }
-                                            }
-                                        }
-
-                                        separatingSequences.clear();
-                                        splittingInfo.clear();
-                                        splittingInfo.shrink_to_fit();
-                                        separatingSequences.shrink_to_fit();
-                                        removePrefixesClassic(CS);
-                                        clearCSClassic(CS);
-                                        reachingSequences = calculateReachingSequneces();
-
-                                        CSM = CS;
-                                        tis = calculateTransitionIdentifiationSequences(reachingSequences, CS);
-                                        sis = calculateStateIdentificationSequences(reachingSequences, CS);
-                                        int MtisS = 0;
-                                        for (int fg = 0; fg < tis.size(); fg++)
-                                            MtisS += tis[fg].size();
-                                        int MsisS = 0;
-                                        for (int fg = 0; fg < sis.size(); fg++)
-                                            MsisS += sis[fg].size();
-                                        int Mtiscount = tis.size();
-                                        int Msiscount = sis.size();
-                                        classes.clear();
-                                        classes.shrink_to_fit();
-                                        Origin.clear();
-                                        Origin.shrink_to_fit();
-                                        WM = calculateCharacterisingSet(sis, tis);
-                                        double memoryM = getUsedMemoryMB();
-                                        auto end_min_T_time = std::chrono::high_resolution_clock::now();
-                                        auto classicTime_T3 = end_min_T_time - start_min_T_time;
-                                        float t_T3 = classicTime_T3 / std::chrono::milliseconds(1);
-                                        /////////////////////////////Min Ends Here
-                                        int WOlength = getLength(WO);
-                                        int WNlength = getLength(WN);
-                                        int CSOlength = getLength(CSO[0]);
-                                        int CSNlength = getLength(CSN[0]);
-                                        int WMlength = getLength(WM);
-                                        int CSMlength = getLength(CSM[0]);
-                                        
-                                      {
-
-                                            writeStatFile << FSMid << " " << FSMStates << " " << FSMInputs << " " << FSMOutputs << " " << FSMSize << " " << t_T1 << " " << memoryO <<" "  << transferLengthO << " " <<1<< " " << OsisS << " " << otiscount + osiscount << " " << OsisS + OtisS << " OWA" << endl;
-                                            writeStatFile << FSMid << " " << FSMStates << " " << FSMInputs << " " << FSMOutputs << " " << FSMSize << " " << t_T2 << " " << memoryC << " " << transferLengthC << " " << nsiscount << " " << NsisS << " " << ntiscount + nsiscount << " " << NtisS + NsisS << " CWA" << endl;
-                                            writeStatFile << FSMid << " " << FSMStates << " " << FSMInputs << " " << FSMOutputs << " " << FSMSize << " " << t_T3 << " " << memoryM << " " << transferLengthC << " " << Msiscount << " " << MsisS << " " << Mtiscount + Msiscount << " " << MtisS + MsisS << " MWA" << endl;
-
-                                            writeSeqFile << FSMid << " " << FSMStates << " " << FSMInputs << " " << FSMOutputs << " " << FSMSize << " OrderedW={";
-                                            for (int m = 0; m < WO.size(); m++)
-                                            {
-                                                writeSeqFile << "{";
-                                                for (int n = 0; n < WO[m].size(); n++)
-                                                {
-                                                    writeSeqFile << char(WO[m][n] + 97);
-                                                }
-                                                writeSeqFile << "}";
-                                            }
-                                            writeSeqFile << "} --- ";
-                                            writeSeqFile << " ClassicW={";
-                                            for (int m = 0; m < WN.size(); m++)
-                                            {
-                                                writeSeqFile << "{";
-                                                for (int n = 0; n < WN[m].size(); n++)
-                                                {
-                                                    writeSeqFile << char(WN[m][n] + 97);
-                                                }
-                                                writeSeqFile << "}";
-                                            }
-                                            writeSeqFile << "} --- ";
-                                            writeSeqFile << " MinW={";
-                                            for (int m = 0; m < WM.size(); m++)
-                                            {
-                                                writeSeqFile << "{";
-                                                for (int n = 0; n < WM[m].size(); n++)
-                                                {
-                                                    writeSeqFile << char(WM[m][n] + 97);
-                                                }
-                                                writeSeqFile << "}";
-                                            }
-                                            writeSeqFile << " OCS={";
-                                            for (int m = 0; m < CSO[0].size(); m++)
-                                            {
-                                                writeSeqFile << "{";
-                                                for (int n = 0; n < CSO[0][m].size(); n++)
-                                                {
-                                                    writeSeqFile << char(CSO[0][m][n] + 97);
-                                                }
-                                                writeSeqFile << "}";
-                                            }
-                                            writeSeqFile << "} --- ";
-                                            writeSeqFile << " CCS={";
-                                            for (int m = 0; m < CSN[0].size(); m++)
-                                            {
-                                                writeSeqFile << "{";
-                                                for (int n = 0; n < CSN[0][m].size(); n++)
-                                                {
-                                                    writeSeqFile << char(CSN[0][m][n] + 97);
-                                                }
-                                                writeSeqFile << "}";
-                                            }
-                                           writeSeqFile << "} --- ";
-                                            writeSeqFile << " MCS={";
-                                            for (int m = 0; m < CSM[0].size(); m++)
-                                            {
-                                                writeSeqFile << "{";
-                                                for (int n = 0; n < CSM[0][m].size(); n++)
-                                                {
-                                                    writeSeqFile << char(CSM[0][m][n] + 97);
-                                                }
-                                                writeSeqFile << "}";
-                                            }
-                                            writeSeqFile << "}" << endl;
-                                            counter++;
-                                        }
-                                        
-                                        
-                                        WO.clear();
-                                        WO.shrink_to_fit();
-                                        WN.clear();
-                                        WN.shrink_to_fit();
-                                    }
-                                    CSO.clear();
-                                    CSN.clear();
-                                    CSO.shrink_to_fit();
-                                    CSN.shrink_to_fit();
-                                }
-                                
-                                CS.clear();
-                                CS.shrink_to_fit();
-                                activeStates.clear();
-                                activeStates.shrink_to_fit();
-                                indexes.clear();
-                                indexes.shrink_to_fit();
-                                edges.clear();
-                                edges.shrink_to_fit();
-                                oSIS.clear();
-                                oSIS.shrink_to_fit();
-                                
-                                mySequence = stack<int>();
-                                sequence = stack<int>();
-                                myQ = queue<pair<int, vector<int>>>();
-                                sms = vector < vector<bool>>();
-                                indexes = deque<int>();
-                                inputsOrder= vector<int>();
-                                
-                                edges= vector<vector<edge>>();
-                                myQ = queue<pair<int, vector<int>>>();
-                                sms = vector<vector<bool>>();;
                             }
-                        
-                    }   
-                    writeSeqFile.close();
-                    writeStatFile.close();    
+                        }
+                    }
+
+                    separatingSequences.clear();
+                    splittingInfo.clear();
+                    splittingInfo.shrink_to_fit();
+                    separatingSequences.shrink_to_fit();
+                    removePrefixesClassic(CS);
+                    clearCSClassic(CS);
+                    reachingSequences = calculateReachingSequneces();
+
+                    CSN = CS;
+                    tis = calculateTransitionIdentifiationSequences(reachingSequences, CS);
+                    sis = calculateStateIdentificationSequences(reachingSequences, CS);
+                    int NtisS = 0;
+                    for (int fg = 0; fg < tis.size(); fg++)
+                        NtisS += tis[fg].size();
+                    int NsisS = 0;
+                    for (int fg = 0; fg < sis.size(); fg++)
+                        NsisS += sis[fg].size();
+                    int ntiscount = tis.size();
+                    int nsiscount = sis.size();
+                    classes.clear();
+                    classes.shrink_to_fit();
+                    Origin.clear();
+                    Origin.shrink_to_fit();
+                    WN = calculateCharacterisingSet(sis, tis);
+                    double memoryC = getUsedMemoryMB();
+                    auto end_classic_T_time = std::chrono::high_resolution_clock::now();
+                    auto classicTime_T2 = end_classic_T_time - start_classic_T_time;
+                    float t_T2 = classicTime_T2 / std::chrono::milliseconds(1);
+                    ///////////////////////CLASSIC ENDs HERE/////////////////////////
+
+                    separatingSequences.clear();
+                    separatingSequences.shrink_to_fit();
+                    pairCount = FSMStates * (FSMStates - 1) / 2;
+                    separatingSequences.resize(pairCount);
+                    reachingSequences.clear();
+                    reachingSequences.shrink_to_fit();
+                    tis.clear();
+                    tis.shrink_to_fit();
+                    sis.clear();
+                    sis.shrink_to_fit();
+                    oSIS.clear();
+                    oSIS.shrink_to_fit();
+
+                    CS.clear();
+                    CS.shrink_to_fit();
+
+                    activeStates.clear();
+                    activeStates.shrink_to_fit();
+
+                    for (int l = 0; l < FSMStates; l++)
+                        activeStates.push_back(l);
+                    Origin.clear();
+                    Origin.shrink_to_fit();
+                    classes.clear();
+                    classes.shrink_to_fit();
+                    CS.resize(FSMStates);
+                    splittingInfo.clear();
+                    splittingInfo.shrink_to_fit();
+                    auto start_min_T_time = std::chrono::high_resolution_clock::now();
+                    ///////////////////////Min STARTS HERE/////////////////////////
+
+                    for (int l = 0; l < FSMStates - 1; l++)
+                    {
+                        for (int m = l + 1; m < FSMStates; m++)
+                        {
+                            int input = getSepInfo(l, m);
+                            if (input >= 0)
+                            {
+                                pair<int, int> st;
+                                st.first = l;
+                                st.second = m;
+                                pair< pair<int, int>, vector<int>> sep;
+                                sep.first = st;
+                                vector<int> in;
+                                in.push_back(input);
+                                CS[0].push_back(in);
+                                sep.second = in;
+                                splittingInfo.push_back(sep);
+                                int index = returnPairIndex(l, m, observedOutputs.size());
+                                if (separatingSequences[index].size() == 0)
+                                {
+                                    pairCount--;
+                                    separatingSequences[index].push_back(in);
+                                }
+                                for (int n = l; n < FSMStates - 1; n++)
+                                {
+                                    for (int o = m + 1; o < FSMStates; o++)
+                                    {
+                                        if (separates(input, n, o))
+                                        {
+                                            pair<int, int> sts;
+                                            sts.first = n;
+                                            sts.second = o;
+                                            pair< pair<int, int>, vector<int>> seps;
+                                            seps.first = st;
+                                            seps.second = in;
+                                            splittingInfo.push_back(seps);
+                                            int indexs = returnPairIndex(n, o, observedOutputs.size());
+                                            if (separatingSequences[indexs].size() == 0)
+                                            {
+                                                pairCount--;
+                                                separatingSequences[indexs].push_back(in);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    while (pairCount > 0)
+                    {
+                        for (int l = 0; l < FSMStates - 1; l++)
+                        {
+                            for (int m = l + 1; m < FSMStates; m++)
+                            {
+                                int index = returnPairIndex(l, m, observedOutputs.size());
+                                if (separatingSequences[index].size() == 0)
+                                {
+                                    vector<int> divider;
+                                    for (int n = 0; n < FSMInputs; n++)
+                                    {
+                                        int ns1 = nextStates[l][n];
+                                        int ns2 = nextStates[m][n];
+                                        if (ns1 > ns2)
+                                        {
+                                            int t = ns1;
+                                            ns1 = ns2;
+                                            ns2 = t;
+                                        }
+
+                                        if (ns1 == ns2)
+                                        {
+                                            ;
+                                        }
+                                        else
+                                        {
+                                            int nIndex = returnPairIndex(ns1, ns2, nextStates.size());
+                                            if (separatingSequences[nIndex].size() > 0)
+                                            {
+                                                divider.push_back(n);
+                                            }
+                                        }
+
+                                    }
+                                    if (divider.size() > 0)
+                                    {
+                                        int input = divider[rand() % divider.size()];
+                                        int ns1 = nextStates[l][input];
+                                        int ns2 = nextStates[m][input];
+                                        if (ns1 > ns2)
+                                        {
+                                            int t = ns1;
+                                            ns1 = ns2;
+                                            ns2 = t;
+                                        }
+                                        if (ns1 == ns2)
+                                        {
+                                            ;
+                                        }
+                                        else
+                                        {
+                                            int nIndex = returnPairIndex(ns1, ns2, nextStates.size());
+                                            vector<int>prevSeq;
+                                            prevSeq.push_back(input);
+                                            for (int o = 0; o < separatingSequences[nIndex][0].size(); o++)
+                                            {
+                                                prevSeq.push_back(separatingSequences[nIndex][0][o]);
+                                            }
+                                            if (prevSeq.size() == 0)
+                                                int ne = 0;
+                                            pairCount--;
+                                            separatingSequences[index].push_back(prevSeq);
+                                            CS[0].push_back(prevSeq);
+                                            pair<int, int> st;
+                                            st.first = l;
+                                            st.second = m;
+                                            pair< pair<int, int>, vector<int>> sep;
+                                            sep.first = st;
+                                            sep.second = prevSeq;
+                                            splittingInfo.push_back(sep);
+                                        }
+                                    }
+                                    else
+                                        ;
+
+                                    divider.clear();
+                                    divider.shrink_to_fit();
+                                }
+                            }
+                        }
+                    }
+
+                    separatingSequences.clear();
+                    splittingInfo.clear();
+                    splittingInfo.shrink_to_fit();
+                    separatingSequences.shrink_to_fit();
+                    removePrefixesClassic(CS);
+                    clearCSClassic(CS);
+                    reachingSequences = calculateReachingSequneces();
+
+                    CSM = CS;
+                    tis = calculateTransitionIdentifiationSequences(reachingSequences, CS);
+                    sis = calculateStateIdentificationSequences(reachingSequences, CS);
+                    int MtisS = 0;
+                    for (int fg = 0; fg < tis.size(); fg++)
+                        MtisS += tis[fg].size();
+                    int MsisS = 0;
+                    for (int fg = 0; fg < sis.size(); fg++)
+                        MsisS += sis[fg].size();
+                    int Mtiscount = tis.size();
+                    int Msiscount = sis.size();
+                    classes.clear();
+                    classes.shrink_to_fit();
+                    Origin.clear();
+                    Origin.shrink_to_fit();
+                    WM = calculateCharacterisingSet(sis, tis);
+                    double memoryM = getUsedMemoryMB();
+                    auto end_min_T_time = std::chrono::high_resolution_clock::now();
+                    auto classicTime_T3 = end_min_T_time - start_min_T_time;
+                    float t_T3 = classicTime_T3 / std::chrono::milliseconds(1);
+                    /////////////////////////////Min Ends Here
+                    int WOlength = getLength(WO);
+                    int WNlength = getLength(WN);
+                    int CSOlength = getLength(CSO[0]);
+                    int CSNlength = getLength(CSN[0]);
+                    int WMlength = getLength(WM);
+                    int CSMlength = getLength(CSM[0]);
+
+                    writeStatFile << FSMid << " " << FSMStates << " " << FSMInputs << " " << FSMOutputs << " " << FSMSize << " " << t_T1 << " " << memoryO <<" "  << transferLengthO << " " <<1<< " " << OsisS << " " << otiscount + osiscount << " " << OsisS + OtisS << " OWA" << endl;
+                    writeStatFile << FSMid << " " << FSMStates << " " << FSMInputs << " " << FSMOutputs << " " << FSMSize << " " << t_T2 << " " << memoryC << " " << transferLengthC << " " << nsiscount << " " << NsisS << " " << ntiscount + nsiscount << " " << NtisS + NsisS << " CWA" << endl;
+                    writeStatFile << FSMid << " " << FSMStates << " " << FSMInputs << " " << FSMOutputs << " " << FSMSize << " " << t_T3 << " " << memoryM << " " << transferLengthC << " " << Msiscount << " " << MsisS << " " << Mtiscount + Msiscount << " " << MtisS + MsisS << " MWA" << endl;
+
+                    writeSeqFile << FSMid << " " << FSMStates << " " << FSMInputs << " " << FSMOutputs << " " << FSMSize << " OrderedW={";
+                    for (int m = 0; m < WO.size(); m++)
+                    {
+                        writeSeqFile << "{";
+                        for (int n = 0; n < WO[m].size(); n++)
+                        {
+                            writeSeqFile << char(WO[m][n] + 97);
+                        }
+                        writeSeqFile << "}";
+                    }
+                    writeSeqFile << "} --- ";
+                    writeSeqFile << " ClassicW={";
+                    for (int m = 0; m < WN.size(); m++)
+                    {
+                        writeSeqFile << "{";
+                        for (int n = 0; n < WN[m].size(); n++)
+                        {
+                            writeSeqFile << char(WN[m][n] + 97);
+                        }
+                        writeSeqFile << "}";
+                    }
+                    writeSeqFile << "} --- ";
+                    writeSeqFile << " MinW={";
+                    for (int m = 0; m < WM.size(); m++)
+                    {
+                        writeSeqFile << "{";
+                        for (int n = 0; n < WM[m].size(); n++)
+                        {
+                            writeSeqFile << char(WM[m][n] + 97);
+                        }
+                        writeSeqFile << "}";
+                    }
+                    writeSeqFile << " OCS={";
+                    for (int m = 0; m < CSO[0].size(); m++)
+                    {
+                        writeSeqFile << "{";
+                        for (int n = 0; n < CSO[0][m].size(); n++)
+                        {
+                            writeSeqFile << char(CSO[0][m][n] + 97);
+                        }
+                        writeSeqFile << "}";
+                    }
+                    writeSeqFile << "} --- ";
+                    writeSeqFile << " CCS={";
+                    for (int m = 0; m < CSN[0].size(); m++)
+                    {
+                        writeSeqFile << "{";
+                        for (int n = 0; n < CSN[0][m].size(); n++)
+                        {
+                            writeSeqFile << char(CSN[0][m][n] + 97);
+                        }
+                        writeSeqFile << "}";
+                    }
+                    writeSeqFile << "} --- ";
+                    writeSeqFile << " MCS={";
+                    for (int m = 0; m < CSM[0].size(); m++)
+                    {
+                        writeSeqFile << "{";
+                        for (int n = 0; n < CSM[0][m].size(); n++)
+                        {
+                            writeSeqFile << char(CSM[0][m][n] + 97);
+                        }
+                        writeSeqFile << "}";
+                    }
+                    writeSeqFile << "}" << endl;
+                    counter++;
+                }
+
+                WO.clear();
+                WO.shrink_to_fit();
+                WN.clear();
+                WN.shrink_to_fit();
+            }
+            CSO.clear();
+            CSN.clear();
+            CSO.shrink_to_fit();
+            CSN.shrink_to_fit();
+        }
+
+        CS.clear();
+        CS.shrink_to_fit();
+        activeStates.clear();
+        activeStates.shrink_to_fit();
+        indexes.clear();
+        indexes.shrink_to_fit();
+        edges.clear();
+        edges.shrink_to_fit();
+        oSIS.clear();
+        oSIS.shrink_to_fit();
+
+        mySequence = stack<int>();
+        sequence = stack<int>();
+        myQ = queue<pair<int, vector<int>>>();
+        sms = vector < vector<bool>>();
+        indexes = deque<int>();
+        inputsOrder= vector<int>();
+
+        edges= vector<vector<edge>>();
+        myQ = queue<pair<int, vector<int>>>();
+        sms = vector<vector<bool>>();;
+    }
+
+    writeSeqFile.close();
+    writeStatFile.close();    
 }
