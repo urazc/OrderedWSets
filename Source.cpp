@@ -42,7 +42,7 @@ double getUsedMemoryMB()
     {
         printf("GetProcessMemoryInfo failed with code %d\n", GetLastError());
     }
-    size_t temp2 = pmc.PrivateUsage;
+    size_t temp2 = pmc.PeakWorkingSetSize;
     double mem = static_cast<float>(temp2);
     mem = mem / 1048576.0;
 
