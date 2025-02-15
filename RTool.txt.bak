@@ -1,148 +1,955 @@
-devtools::install_github("hughjonesd/ggmagnify")
-install.packages(c("ggfx", "ggforce")
-install.packages(c("ggfx", "ggforce"))
+data <- read.table("FSMsStat.txt", header = TRUE, sep = " ", stringsAsFactors = FALSE)
+data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
+data_summarized <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarize(SIS_Size = mean(SIS_Size, na.rm = TRUE), .groups = "drop")
+
+
+
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/SIS_Size.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing SIS_Size for each combination of FSMStates, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarize(SIS_Size = mean(SIS_Size, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSMStates, FSMInputs, Algorithm, SIS_Size) %>%
+        pivot_wider(names_from = Algorithm, values_from = SIS_Size)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of SIS_Size for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "SIS_Size_Ratio", -FSMStates, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSMStates, y = SIS_Size_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "FSM States",
+         y = "Avg. of the gain(%) for \n the total number of \n sequences in SISs",
+         color = "Algorithm Comparison")+
+    facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(0,100, by = 0.5	))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+
+
+dev.off()	
+
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/SIS_Cost.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing SIS_Cost for each combination of FSMStates, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarize(SIS_Cost = mean(SIS_Cost, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSMStates, FSMInputs, Algorithm, SIS_Cost) %>%
+        pivot_wider(names_from = Algorithm, values_from = SIS_Cost)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of SIS_Cost for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "SIS_Cost_Ratio", -FSMStates, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSMStates, y = SIS_Cost_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "FSM States",
+         y = "Avg. of the gain(%) for \n the total number of\n inputs in SISs",
+         color = "Algorithm Comparison") +
+    facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks =  seq(0,100, by = 5))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+dev.off()
+
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/SIS_Tr.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing SIS_Tr for each combination of FSMStates, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarize(SIS_Tr = mean(SIS_Tr, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSMStates, FSMInputs, Algorithm, SIS_Tr) %>%
+        pivot_wider(names_from = Algorithm, values_from = SIS_Tr)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of SIS_Tr for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "SIS_Tr_Ratio", -FSMStates, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSMStates, y = SIS_Tr_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "FSM States",
+         y = "Avg. of the gain(%) for \n the total number of\n transfer inputs in SISs",
+         color = "Algorithm Comparison") +
+    facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks =  seq(0,100, by = 2))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+dev.off()	
+
+
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/TS_Size.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing TS_Size for each combination of FSMStates, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarize(TS_Size = mean(TS_Size, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSMStates, FSMInputs, Algorithm, TS_Size) %>%
+        pivot_wider(names_from = Algorithm, values_from = TS_Size)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of TS_Size for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "TS_Size_Ratio", -FSMStates, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSMStates, y = TS_Size_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "FSM States",
+         y = "Avg. of the gain(%) for \n the total number of\n sequences in TSs",
+         color = "Algorithm Comparison") +
+    facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks =  seq(0,100, by = 15))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+
+
+dev.off()		
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/TS_Cost.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+
+
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing TS_Cost for each combination of FSMStates, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarize(TS_Cost = mean(TS_Cost, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSMStates, FSMInputs, Algorithm, TS_Cost) %>%
+        pivot_wider(names_from = Algorithm, values_from = TS_Cost)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of TS_Cost for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "TS_Cost_Ratio", -FSMStates, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSMStates, y = TS_Cost_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "FSM States",
+         y = "Avg. of the gain(%) for \n the total number of\n inputs in TSs",
+         color = "Algorithm Comparison") +
+    facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks =  seq(0,100, by = 15))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+dev.off()		
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/W_memory.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+
+
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing W_Memory for each combination of FSMStates, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarize(W_Memory = mean(W_Memory, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSMStates, FSMInputs, Algorithm, W_Memory) %>%
+        pivot_wider(names_from = Algorithm, values_from = W_Memory)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of W_Memory for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "W_Memory_Ratio", -FSMStates, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSMStates, y = W_Memory_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "FSM States",
+         y = "Avg. of the gain(%) for \n the memory use \n while deriving W sets",
+         color = "Algorithm Comparison") +
+    facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks =  seq(0,100, by = 15))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+dev.off()	
+
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/W_time.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing W_Time for each combination of FSMStates, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarize(W_Time = mean(W_Time, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSMStates, FSMInputs, Algorithm, W_Time) %>%
+        pivot_wider(names_from = Algorithm, values_from = W_Time)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of W_Time for each algorithm
+    data_ratios <- data_wide %>%
+                mutate(
+           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "W_Time_Ratio", -FSMStates, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSMStates, y = W_Time_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+   geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "FSM States",
+         y = "Avg. of the gain(%) for \n the time spent \n while deriving W sets",
+         color = "Algorithm Comparison") +
+        facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
+      scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks = seq(0,100, by = 15))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+	
+	dev.off()	
+
+
+
+
 library(ggplot2)
 library(dplyr)
-library(ggmagnify)
-
-
-new_o <- read.csv("<yourFolderLocation>FSMsStat.txt", sep=" ", row.names=NULL)
-
-tiff(file= "<yourFolderLocation>transfers.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(new_o , aes(x=FSMStates,y=log10(SIS_Tr), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(SIS_Tr+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(SIS_Tr+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(SIS_Tr+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of transfer inputs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-tiff(file= "<yourFolderLocation>SISCost.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(new_o , aes(x=FSMStates,y=log10(SIS_Cost), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(SIS_Cost)))+geom_boxplot(aes(x=FSMStates,y=log10(SIS_Cost),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(SIS_Cost),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of Inputs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-tiff(file= "<yourFolderLocation>SISSize.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(new_o , aes(x=FSMStates,y=log10(SIS_Size), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(SIS_Size)))+geom_boxplot(aes(x=FSMStates,y=log10(SIS_Size),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(SIS_Size),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of Sequences)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-
-tiff(file= "<yourFolderLocation>mem.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(new_o , aes(x=FSMStates,y=log10(W_Memory+0.001), color = Algorithm))+geom_boxplot(aes(x=FSMStates,y=log10(W_Memory),fill=factor(FSMStates)),outlier.shape = NA)+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(W_Memory+0.001)))+geom_point(aes(x=FSMStates,y=log10(W_Memory+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(MBs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-tiff(file= "<yourFolderLocation>tim.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(new_o , aes(x=FSMStates,y=log10(W_Time+0.001), color = Algorithm))+geom_boxplot(aes(x=FSMStates,y=log10(W_Time),fill=factor(FSMStates)),outlier.shape = NA)+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(W_Time+0.001)))+geom_point(aes(x=FSMStates,y=log10(W_Time+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Time(msecs))")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-tiff(file= "<yourFolderLocation>TSSize.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(new_o , aes(x=FSMStates,y=log10(TS_Size), color = Algorithm))+geom_boxplot(aes(x=FSMStates,y=log10(TS_Size),fill=factor(FSMStates)),outlier.shape = NA)+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(TS_Size)))+geom_point(aes(x=FSMStates,y=log10(TS_Size),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(# of sequences in TS)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-tiff(file= "<yourFolderLocation>TSCost.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(new_o , aes(x=FSMStates,y=log10(TS_Cost), color = Algorithm))+geom_boxplot(aes(x=FSMStates,y=log10(TS_Cost),fill=factor(FSMStates)),outlier.shape = NA)+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(TS_Cost)))+geom_point(aes(x=FSMStates,y=log10(TS_Cost),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("# of inputs in TS")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-
-
-
-new_O_Bench <- read.csv("<yourFolderLocation>Benchmarks/benchFsmsStat.txt", sep=" ", row.names=NULL)
-
-tiff(file= "<yourFolderLocation>Benchmarks/BTS_Cost.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
-ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=(log10(TS_Cost)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-tiff(file= "<yourFolderLocation>Benchmarks/BTS_Size.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
-ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=(log10(TS_Size)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-tiff(file= "<yourFolderLocation>Benchmarks/BSIS_Size.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
-ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=((SIS_Size)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-tiff(file= "<yourFolderLocation>Benchmarks/BSIS_Cost.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
-ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=((SIS_Cost)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-tiff(file= "<yourFolderLocation>Benchmarks/BSIS_Tran.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
-ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=((SIS_Tr)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-tiff(file= "<yourFolderLocation>Benchmarks/BTime.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
-ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=(log10(W_Time)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-tiff(file= "<yourFolderLocation>Benchmarks/BMemory.tiff",width=6.5, height= 6, units='in', compression = 'lzw', res=300)
-ggplot(new_O_Bench, aes(x=as.character(FSM_ID), y=(log10(W_Memory)), color = Algorithm, group=Algorithm)) + geom_line(aes(alpha=0.1))+geom_point(size=3)+theme(strip.text.x = element_text(size=15))+labs(x = "")+theme(axis.text.x = element_text(angle = 90,hjust=1))+ guides(alpha = "none")+theme(axis.text = element_text(size=12,face="bold"))+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+theme(axis.text.x =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-dev.off()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/trans.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(OrderedWResults , aes(x=FSMStates,y=log10(Transfer+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(Transfer+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(Transfer+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(Transfer+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of transfers)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-
-dev.off()
-
-
-
-
-tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/sii.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(OrderedWResults , aes(x=FSMStates,y=log10(State_Identification_Inputs+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(State_Identification_Inputs+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(State_Identification_Inputs+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(State_Identification_Inputs+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of state identification inputs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-
-dev.off()
-
-
-tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/sis.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(OrderedWResults , aes(x=FSMStates,y=log10(State_Identification_Sequences+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(State_Identification_Sequences+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(State_Identification_Sequences+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(State_Identification_Sequences+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of state identification sequences)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE)
-
-dev.off()
-
-
-
-tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/tii.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(OrderedWResults , aes(x=FSMStates,y=log10(Transition_Identification_Inputs+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(Transition_Identification_Inputs+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(Transition_Identification_Inputs+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(Transition_Identification_Inputs+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of transition identification inputs)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE) +geom_magnify(from = c(90,200,4,4.9), to = c(50,200,2.5,3.5),shadow = TRUE)
-
-dev.off()
-
-
-tiff(file= "C:/Users/auton/source/repos/SequentialOrderedWSET/tis.tiff",width=6.5, height= 4.8, units='in', compression = 'lzw', res=300)
-
-ggplot(OrderedWResults , aes(x=FSMStates,y=log10(Transition_Identification_Sequences+0.001), color = Algorithm))+stat_smooth(method="loess",size=0.1,level=0.95, span=0.4,aes(x=FSMStates,y=log10(Transition_Identification_Sequences+0.001)))+geom_boxplot(aes(x=FSMStates,y=log10(Transition_Identification_Sequences+0.001),fill=factor(FSMStates)),outlier.shape = NA)+geom_point(aes(x=FSMStates,y=log10(Transition_Identification_Sequences+0.001),fill=factor(FSMStates)),size=1,alpha=0.02,position = position_jitter(w = 2, h = 0))+ guides(fill = FALSE)+facet_wrap(.~FSMInputs)+theme_bw()+theme(axis.text.x=element_text(face="bold",color="black",size=13,angle=90),legend.title = element_text(face="bold"), legend.text = element_text(face="bold"),axis.title.y = element_text(face="bold"))+ylab("log10(Total # of transition identification sequences)")+ theme(legend.position="top")+theme(strip.text.x = element_text(size = 14))+theme(axis.text.y =element_text(face="bold",color="black",size=13))+ theme(legend.title = element_blank())+ theme(legend.title = element_blank()) + scale_color_manual(values=c("#000033","#336699","#CC3300"))+ theme(legend.text=element_text(size=13))+ scale_fill_hue(l=255, c=0)+ guides(shape=FALSE) +geom_magnify(from = c(90,200,3.2,4.1), to = c(80,200,1.7,2.8),shadow = TRUE)
-dev.off()
-
-
-
-
+library(tidyr)
+
+# Read the input data from a space-delimited text file
+data <- read.table("C:/Users/auton/source/repos/Paper_OWSet/x64/Release/Benchmarks/benchFsmsStat.txt", header = TRUE, sep = " ")
+
+	
+	
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BSIS_Size.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing SIS_Size for each combination of FSM_ID, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSM_ID, FSMInputs, Algorithm) %>%
+    summarize(SIS_Size = mean(SIS_Size, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSM_ID, FSMInputs, Algorithm, SIS_Size) %>%
+        pivot_wider(names_from = Algorithm, values_from = SIS_Size)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of SIS_Size for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "SIS_Size_Ratio", -FSM_ID, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Size_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "",
+         y = "The gain(%) for \n the total number of \n sequences in SISs",
+         color = "Algorithm Comparison")+
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(0,100, by = 5	))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+dev.off()		
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BSIS_Cost.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)	
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing SIS_Cost for each combination of FSM_ID, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSM_ID, FSMInputs, Algorithm) %>%
+    summarize(SIS_Cost = mean(SIS_Cost, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSM_ID, FSMInputs, Algorithm, SIS_Cost) %>%
+        pivot_wider(names_from = Algorithm, values_from = SIS_Cost)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of SIS_Cost for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "SIS_Cost_Ratio", -FSM_ID, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Cost_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "",
+         y = "The gain(%) for \n the total number of \n inputs in SISs",
+         color = "Algorithm Comparison")+
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(0,100, by = 10	))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+
+dev.off()	
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BSIS_Tr.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing SIS_Tr for each combination of FSM_ID, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSM_ID, FSMInputs, Algorithm) %>%
+    summarize(SIS_Tr = mean(SIS_Tr, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSM_ID, FSMInputs, Algorithm, SIS_Tr) %>%
+        pivot_wider(names_from = Algorithm, values_from = SIS_Tr)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of SIS_Tr for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "SIS_Tr_Ratio", -FSM_ID, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Tr_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "",
+         y = "The gain(%) for \n the total number of \n transfer inputs in SISs",
+         color = "Algorithm Comparison")+
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(0,100, by = 10	))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+dev.off()	
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BTS_Size.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing TS_Size for each combination of FSM_ID, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSM_ID, FSMInputs, Algorithm) %>%
+    summarize(TS_Size = mean(TS_Size, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSM_ID, FSMInputs, Algorithm, TS_Size) %>%
+        pivot_wider(names_from = Algorithm, values_from = TS_Size)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of TS_Size for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "TS_Size_Ratio", -FSM_ID, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSM_ID, y = TS_Size_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "",
+         y = "The gain(%) for \n the total number of \n sequences in TSs",
+         color = "Algorithm Comparison")+
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-50,100, by = 20	))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+dev.off()	
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BTS_Cost.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing TS_Cost for each combination of FSM_ID, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSM_ID, FSMInputs, Algorithm) %>%
+    summarize(TS_Cost = mean(TS_Cost, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSM_ID, FSMInputs, Algorithm, TS_Cost) %>%
+        pivot_wider(names_from = Algorithm, values_from = TS_Cost)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of TS_Cost for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "TS_Cost_Ratio", -FSM_ID, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSM_ID, y = TS_Cost_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "",
+         y = "The gain(%) for \n the total number of \n inputs in TSs",
+         color = "Algorithm Comparison")+
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-50,100, by = 20	))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+dev.off()	
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BW_Memory.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing W_Memory for each combination of FSM_ID, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSM_ID, FSMInputs, Algorithm) %>%
+    summarize(W_Memory = mean(W_Memory, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSM_ID, FSMInputs, Algorithm, W_Memory) %>%
+        pivot_wider(names_from = Algorithm, values_from = W_Memory)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of W_Memory for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
+            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "W_Memory_Ratio", -FSM_ID, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSM_ID, y = W_Memory_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "",
+         y = "The gain(%) for \n the memory use \n while deriving W sets",
+         color = "Algorithm Comparison")+
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-50,100, by = 20	))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+
+dev.off()	
+
+tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BW_Time.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+# Ensure the Algorithm column is a factor with levels for comparison
+data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
+
+# Handle duplicates by summarizing W_Time for each combination of FSM_ID, FSMInputs, and Algorithm
+data_summarized <- data %>%
+    group_by(FSM_ID, FSMInputs, Algorithm) %>%
+    summarize(W_Time = mean(W_Time, na.rm = TRUE), .groups = "drop")
+
+# Calculate pairwise ratios function using pivot_wider()
+calculate_ratios <- function(data) {
+    # Reshape the data to wide format using pivot_wider()
+    data_wide <- data %>%
+        select(FSM_ID, FSMInputs, Algorithm, W_Time) %>%
+        pivot_wider(names_from = Algorithm, values_from = W_Time)
+    
+    # Check for missing values in the wide data and remove rows with NAs
+    data_wide <- data_wide %>% filter(complete.cases(.))
+    
+    # Calculate the pairwise ratios of W_Time for each algorithm
+    data_ratios <- data_wide %>%
+        mutate(
+            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / (`CWA`+0.01),
+            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / (`MWA`+0.01),
+        ) %>%
+        # Select the relevant columns and gather back to long format
+        select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
+        gather(key = "Algorithm_Ratio", value = "W_Time_Ratio", -FSM_ID, -FSMInputs)
+    
+    return(data_ratios)
+}
+
+# Calculate the pairwise ratios
+data_ratios <- calculate_ratios(data_summarized)
+
+# Create the ggplot line plot
+ggplot(data_ratios, aes(x = FSM_ID, y = W_Time_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+    geom_line(size = 1) +  # Line with different types
+    geom_point(size = 1.5) +  # Points (tick marks) on the lines
+    labs(,
+         x = "",
+         y = "The gain(%) for \n the time spent \n while deriving W sets",
+         color = "Algorithm Comparison")+
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+                       labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
+                       guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
+    scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
+                          guide = "none") +  # Remove duplicate line legend
+    scale_shape_manual(values = c("CWA_vs_BOWA" = 16, "MWA_vs_BOWA" = 13),
+                       guide = "none") +  # Remove duplicate shape legend
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, hjust = 1)) + 
+    theme(legend.text = element_text(size = 20)) + 
+    theme(legend.title = element_blank()) + 
+    guides(alpha = "none") + 
+    theme(axis.text = element_text(size = 12, face = "bold")) + 
+    theme(legend.position = "top") + 
+    theme(strip.text.x = element_text(size = 20)) + 
+    theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-100,100, by = 20	))+theme(
+        axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
+        axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
+    )
+
+dev.off()	
