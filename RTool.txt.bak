@@ -1,4 +1,11 @@
-data <- read.table("FSMsStat.txt", header = TRUE, sep = " ", stringsAsFactors = FALSE)
+SYNTHETIC
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+
+data <- read.table("fsmsStat.txt", header = TRUE, sep = " ", stringsAsFactors = FALSE)
 data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
 data_summarized <- data %>%
     group_by(FSMStates, FSMInputs, Algorithm) %>%
@@ -7,7 +14,7 @@ data_summarized <- data %>%
 
 
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/SIS_Size.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+tiff(file= "SIS_Size.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
 
@@ -29,8 +36,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of SIS_Size for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+            CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `OWA`) / (`CWA`+0.001), 100 * (`CWA` - `OWA`) / `CWA`),
+            MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `OWA`) / (`MWA`+0.001), 100 * (`MWA` - `OWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -76,7 +83,7 @@ ggplot(data_ratios, aes(x = FSMStates, y = SIS_Size_Ratio, group = Algorithm_Rat
 dev.off()	
 
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/SIS_Cost.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+tiff(file= "SIS_Cost.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
 
@@ -98,8 +105,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of SIS_Cost for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+            CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `OWA`) / (`CWA`+0.001), 100 * (`CWA` - `OWA`) / `CWA`),
+            MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `OWA`) / (`MWA`+0.001), 100 * (`MWA` - `OWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -143,7 +150,7 @@ ggplot(data_ratios, aes(x = FSMStates, y = SIS_Cost_Ratio, group = Algorithm_Rat
 dev.off()
 
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/SIS_Tr.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+tiff(file= "SIS_Tr.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
 
@@ -165,8 +172,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of SIS_Tr for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+            CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `OWA`) / (`CWA`+0.001), 100 * (`CWA` - `OWA`) / `CWA`),
+            MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `OWA`) / (`MWA`+0.001), 100 * (`MWA` - `OWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -203,7 +210,7 @@ ggplot(data_ratios, aes(x = FSMStates, y = SIS_Tr_Ratio, group = Algorithm_Ratio
     theme(legend.position = "top") + 
     theme(strip.text.x = element_text(size = 20)) + 
     theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
-    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks =  seq(0,100, by = 2))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks =  seq(0,100, by = 20))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
         axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
         axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
     )
@@ -211,7 +218,7 @@ dev.off()
 
 
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/TS_Size.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+tiff(file= "TS_Size.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
 
@@ -233,8 +240,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of TS_Size for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+            CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `OWA`) / (`CWA`+0.001), 100 * (`CWA` - `OWA`) / `CWA`),
+            MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `OWA`) / (`MWA`+0.001), 100 * (`MWA` - `OWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -279,7 +286,7 @@ ggplot(data_ratios, aes(x = FSMStates, y = TS_Size_Ratio, group = Algorithm_Rati
 
 dev.off()		
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/TS_Cost.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+tiff(file= "TS_Cost.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
 
 
 # Ensure the Algorithm column is a factor with levels for comparison
@@ -303,8 +310,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of TS_Cost for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+            CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `OWA`) / (`CWA`+0.001), 100 * (`CWA` - `OWA`) / `CWA`),
+            MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `OWA`) / (`MWA`+0.001), 100 * (`MWA` - `OWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -347,7 +354,7 @@ ggplot(data_ratios, aes(x = FSMStates, y = TS_Cost_Ratio, group = Algorithm_Rati
     )
 dev.off()		
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/W_memory.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+tiff(file= "W_memory.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
 
 
 # Ensure the Algorithm column is a factor with levels for comparison
@@ -371,8 +378,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of W_Memory for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+            CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `OWA`) / (`CWA`+0.001), 100 * (`CWA` - `OWA`) / `CWA`),
+            MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `OWA`) / (`MWA`+0.001), 100 * (`MWA` - `OWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -409,14 +416,14 @@ ggplot(data_ratios, aes(x = FSMStates, y = W_Memory_Ratio, group = Algorithm_Rat
     theme(legend.position = "top") + 
     theme(strip.text.x = element_text(size = 20)) + 
     theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
-    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks =  seq(0,100, by = 15))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20))+scale_y_continuous(breaks =  seq(-50,100, by = 50))+scale_x_continuous(breaks = seq(0,200, by = 40))+theme(
         axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
         axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
     )
 dev.off()	
 
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/W_time.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
+tiff(file= "W_time.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
 
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("OWA", "CWA", "MWA"))
@@ -438,9 +445,9 @@ calculate_ratios <- function(data) {
     
     # Calculate the pairwise ratios of W_Time for each algorithm
     data_ratios <- data_wide %>%
-                mutate(
-           CWA_vs_BOWA = 100*(`CWA` - `OWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `OWA`) / `MWA`,
+        mutate(
+            CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `OWA`) / (`CWA`+0.001), 100 * (`CWA` - `OWA`) / `CWA`),
+            MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `OWA`) / (`MWA`+0.001), 100 * (`MWA` - `OWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSMStates, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -454,14 +461,14 @@ data_ratios <- calculate_ratios(data_summarized)
 
 # Create the ggplot line plot
 ggplot(data_ratios, aes(x = FSMStates, y = W_Time_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
-   geom_line(size = 1) +  # Line with different types
+    geom_line(size = 1) +  # Line with different types
     geom_point(size = 1.5) +  # Points (tick marks) on the lines
     labs(,
          x = "FSM States",
          y = "Avg. of the gain(%) for \n the time spent \n while deriving W sets",
          color = "Algorithm Comparison") +
-        facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
-      scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
+    facet_wrap(~FSMInputs, scales = "free_y", labeller = labeller(FSMInputs = function(x) paste("Number of Inputs:", x))) +  # Facet by FSMInputs
+    scale_color_manual(values = c("CWA_vs_BOWA" = "red", "MWA_vs_BOWA" = "blue"), 
                        labels = c("CWA_vs_BOWA" = "((CWA-BOWA)*100)/CWA", "MWA_vs_BOWA" = "((MWA-BOWA)*100)/MWA"),
                        guide = guide_legend(override.aes = list(shape = 16))) +  # Custom legend labels and overrides
     scale_linetype_manual(values = c("CWA_vs_BOWA" = "solid", "MWA_vs_BOWA" = "dashed"),
@@ -481,22 +488,75 @@ ggplot(data_ratios, aes(x = FSMStates, y = W_Time_Ratio, group = Algorithm_Ratio
         axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
         axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
     )
-	
-	dev.off()	
+
+dev.off()
+
+tiff(file= "IVar.tiff",width=15, height= 5, units='in', compression = 'lzw', res=300)
 
 
+# Columns you want to calculate variances for
+variables <- c("SIS_Tr", "SIS_Cost")
+
+# Function to remove outliers based on IQR
+remove_outliers <- function(x) {
+    # Calculate IQR
+    Q1 <- quantile(x, 0.25, na.rm = TRUE)
+    Q3 <- quantile(x, 0.75, na.rm = TRUE)
+    IQR_value <- Q3 - Q1
+    
+    # Define lower and upper bounds
+    lower_bound <- Q1 - 1.5 * IQR_value
+    upper_bound <- Q3 + 1.5 * IQR_value
+    
+    # Filter out values outside of the bounds
+    x[x >= lower_bound & x <= upper_bound]
+}
+
+# Calculate sample variance for each variable, grouped by FSMStates, FSMInputs, and Algorithm
+variance_data <- data %>%
+    group_by(FSMStates, FSMInputs, Algorithm) %>%
+    summarise(across(all_of(variables), ~ var(remove_outliers(.x)), .names = "var_{.col}")) %>%  # Apply outlier removal
+    pivot_longer(cols = starts_with("var_"), names_to = "Variable", values_to = "Variance") %>%
+    mutate(Variable = gsub("var_", "", Variable)) %>%  # Clean up column names
+    mutate(Variable = recode(Variable,
+                             "SIS_Tr" = "Transfer Inputs",
+                             "SIS_Cost" = "Number of Inputs")) %>%  # Replace labels
+    mutate(Algorithm = recode(Algorithm, "OWA" = "BOWA"))  # Replace "OWA" with "BOWA"
+
+# Create the plot
+ggplot(variance_data, aes(x = FSMStates, y = log10(Variance + 0.001), color = Algorithm, linetype = Algorithm)) +
+    facet_grid(FSMInputs ~ Variable) +
+    geom_line(size = 1) +  # Line plot with increased line width
+    geom_point(size = 0.5, aes(shape = Algorithm), fill = "white") +  # Add points with shape depending on Algorithm
+    labs(
+        x = "Number of FSM States",
+        y = "Sample Variance (log10)"
+    ) +
+    theme_minimal() +
+    theme(
+        axis.text.x = element_text(angle = 90, hjust = 1, size = 22, face = "bold"), # X axis labels bold & size 22
+        axis.text.y = element_text(size = 22, face = "bold"), # Y axis labels bold & size 22
+        axis.title.x = element_text(size = 22, face = "bold"), # X axis title bold & size 22
+        axis.title.y = element_text(size = 22, face = "bold"), # Y axis title bold & size 22
+        strip.text = element_text(size = 22, face = "bold"), # Facet labels bold & size 22
+        panel.spacing = unit(1, "lines"),  # Add space between facets (adjust the size as needed)
+        panel.border = element_rect(color = "black", fill = NA, size = 1), # Add border lines around panels
+        legend.position = "top",  # Move the legend to the top
+        legend.text = element_text(size = 20, face = "bold"), # Make legend text bold & size 20
+        legend.title = element_blank()  # Optionally, remove the legend title
+    )
+
+dev.off()
 
 
-library(ggplot2)
-library(dplyr)
-library(tidyr)
+BENCHMARKS 
 
 # Read the input data from a space-delimited text file
-data <- read.table("C:/Users/auton/source/repos/Paper_OWSet/x64/Release/Benchmarks/benchFsmsStat.txt", header = TRUE, sep = " ")
+data <- read.table("Benchmarks/New Folder/benchFsmsStat.txt", header = TRUE, sep = " ")
 
 	
 	
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BSIS_Size.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+tiff(file= "BSIS_Size.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
 
@@ -518,8 +578,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of SIS_Size for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+			CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `BOWA`) / (`CWA`+0.001), 100 * (`CWA` - `BOWA`) / `CWA`),
+			MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `BOWA`) / (`MWA`+0.001), 100 * (`MWA` - `BOWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -532,7 +592,7 @@ calculate_ratios <- function(data) {
 data_ratios <- calculate_ratios(data_summarized)
 
 # Create the ggplot line plot
-ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Size_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+ggplot(data_ratios, aes(x=as.character(FSM_ID), y = SIS_Size_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
     geom_line(size = 1) +  # Line with different types
     geom_point(size = 1.5) +  # Points (tick marks) on the lines
     labs(,
@@ -561,7 +621,7 @@ ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Size_Ratio, group = Algorithm_Ratio,
     )
 dev.off()		
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BSIS_Cost.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)	
+tiff(file= "BSIS_Cost.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)	
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
 
@@ -583,8 +643,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of SIS_Cost for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+			CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `BOWA`) / (`CWA`+0.001), 100 * (`CWA` - `BOWA`) / `CWA`),
+			MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `BOWA`) / (`MWA`+0.001), 100 * (`MWA` - `BOWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -597,7 +657,7 @@ calculate_ratios <- function(data) {
 data_ratios <- calculate_ratios(data_summarized)
 
 # Create the ggplot line plot
-ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Cost_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+ggplot(data_ratios, aes(x=as.character(FSM_ID), y = SIS_Cost_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
     geom_line(size = 1) +  # Line with different types
     geom_point(size = 1.5) +  # Points (tick marks) on the lines
     labs(,
@@ -620,14 +680,14 @@ ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Cost_Ratio, group = Algorithm_Ratio,
     theme(legend.position = "top") + 
     theme(strip.text.x = element_text(size = 20)) + 
     theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
-    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(0,100, by = 10	))+theme(
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-90,150, by = 20	))+theme(
         axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
         axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
     )
 
 dev.off()	
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BSIS_Tr.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+tiff(file= "BSIS_Tr.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
 
@@ -649,8 +709,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of SIS_Tr for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+            CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `BOWA`) / (`CWA`+0.001), 100 * (`CWA` - `BOWA`) / `CWA`),
+            MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `BOWA`) / (`MWA`+0.001), 100 * (`MWA` - `BOWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -663,7 +723,7 @@ calculate_ratios <- function(data) {
 data_ratios <- calculate_ratios(data_summarized)
 
 # Create the ggplot line plot
-ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Tr_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+ggplot(data_ratios, aes(x=as.character(FSM_ID), y = SIS_Tr_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
     geom_line(size = 1) +  # Line with different types
     geom_point(size = 1.5) +  # Points (tick marks) on the lines
     labs(,
@@ -686,13 +746,13 @@ ggplot(data_ratios, aes(x = FSM_ID, y = SIS_Tr_Ratio, group = Algorithm_Ratio, c
     theme(legend.position = "top") + 
     theme(strip.text.x = element_text(size = 20)) + 
     theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
-    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(0,100, by = 10	))+theme(
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-1000,100, by = 20	))+theme(
         axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
         axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
     )
 dev.off()	
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BTS_Size.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+tiff(file= "BTS_Size.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
 
@@ -714,8 +774,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of TS_Size for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+           CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `BOWA`) / (`CWA`+0.001), 100 * (`CWA` - `BOWA`) / `CWA`),
+		   MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `BOWA`) / (`MWA`+0.001), 100 * (`MWA` - `BOWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -728,7 +788,7 @@ calculate_ratios <- function(data) {
 data_ratios <- calculate_ratios(data_summarized)
 
 # Create the ggplot line plot
-ggplot(data_ratios, aes(x = FSM_ID, y = TS_Size_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+ggplot(data_ratios, aes(x=as.character(FSM_ID), y = TS_Size_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
     geom_line(size = 1) +  # Line with different types
     geom_point(size = 1.5) +  # Points (tick marks) on the lines
     labs(,
@@ -757,7 +817,7 @@ ggplot(data_ratios, aes(x = FSM_ID, y = TS_Size_Ratio, group = Algorithm_Ratio, 
     )
 dev.off()	
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BTS_Cost.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+tiff(file= "BTS_Cost.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
 
@@ -779,8 +839,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of TS_Cost for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+			CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `BOWA`) / (`CWA`+0.001), 100 * (`CWA` - `BOWA`) / `CWA`),
+			MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `BOWA`) / (`MWA`+0.001), 100 * (`MWA` - `BOWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -793,7 +853,7 @@ calculate_ratios <- function(data) {
 data_ratios <- calculate_ratios(data_summarized)
 
 # Create the ggplot line plot
-ggplot(data_ratios, aes(x = FSM_ID, y = TS_Cost_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+ggplot(data_ratios, aes(x=as.character(FSM_ID), y = TS_Cost_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
     geom_line(size = 1) +  # Line with different types
     geom_point(size = 1.5) +  # Points (tick marks) on the lines
     labs(,
@@ -816,13 +876,13 @@ ggplot(data_ratios, aes(x = FSM_ID, y = TS_Cost_Ratio, group = Algorithm_Ratio, 
     theme(legend.position = "top") + 
     theme(strip.text.x = element_text(size = 20)) + 
     theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
-    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-50,100, by = 20	))+theme(
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-90,150, by = 20	))+theme(
         axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
         axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
     )
 dev.off()	
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BW_Memory.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+tiff(file= "BW_Memory.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
 
@@ -844,8 +904,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of W_Memory for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / `CWA`,
-            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / `MWA`,
+			CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `BOWA`) / (`CWA`+0.001), 100 * (`CWA` - `BOWA`) / `CWA`),
+			MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `BOWA`) / (`MWA`+0.001), 100 * (`MWA` - `BOWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -858,7 +918,7 @@ calculate_ratios <- function(data) {
 data_ratios <- calculate_ratios(data_summarized)
 
 # Create the ggplot line plot
-ggplot(data_ratios, aes(x = FSM_ID, y = W_Memory_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+ggplot(data_ratios, aes(x=as.character(FSM_ID), y = W_Memory_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
     geom_line(size = 1) +  # Line with different types
     geom_point(size = 1.5) +  # Points (tick marks) on the lines
     labs(,
@@ -881,14 +941,14 @@ ggplot(data_ratios, aes(x = FSM_ID, y = W_Memory_Ratio, group = Algorithm_Ratio,
     theme(legend.position = "top") + 
     theme(strip.text.x = element_text(size = 20)) + 
     theme(axis.text.y = element_text(face = "bold", color = "black", size = 20)) + 
-    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-50,100, by = 20	))+theme(
+    theme(axis.text.x = element_text(face = "bold", color = "black", size = 20)) +scale_y_continuous(breaks = seq(-50,100, by = 5	))+theme(
         axis.title.x = element_text(size = 22, face = "bold", color="darkgrey"),  # Enlarge x-axis label
         axis.title.y = element_text(size = 22, face = "bold", color="darkgrey")   # Enlarge y-axis label
     )
 
 dev.off()	
 
-tiff(file= "C:/Users/auton/source/repos/Paper_OWSet/x64/Release/BW_Time.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
+tiff(file= "BW_Time.tiff",width=15, height= 10, units='in', compression = 'lzw', res=300)
 # Ensure the Algorithm column is a factor with levels for comparison
 data$Algorithm <- factor(data$Algorithm, levels = c("BOWA", "CWA", "MWA"))
 
@@ -910,8 +970,8 @@ calculate_ratios <- function(data) {
     # Calculate the pairwise ratios of W_Time for each algorithm
     data_ratios <- data_wide %>%
         mutate(
-            CWA_vs_BOWA = 100*(`CWA` - `BOWA`) / (`CWA`+0.01),
-            MWA_vs_BOWA = 100*(`MWA` - `BOWA`) / (`MWA`+0.01),
+			CWA_vs_BOWA = if_else(`CWA` == 0, 100 * (`CWA` - `BOWA`) / (`CWA`+0.001), 100 * (`CWA` - `BOWA`) / `CWA`),
+			MWA_vs_BOWA = if_else(`MWA` == 0, 100 * (`MWA` - `BOWA`) / (`MWA`+0.001), 100 * (`MWA` - `BOWA`) / `MWA`)
         ) %>%
         # Select the relevant columns and gather back to long format
         select(FSM_ID, FSMInputs, CWA_vs_BOWA, MWA_vs_BOWA) %>%
@@ -924,7 +984,7 @@ calculate_ratios <- function(data) {
 data_ratios <- calculate_ratios(data_summarized)
 
 # Create the ggplot line plot
-ggplot(data_ratios, aes(x = FSM_ID, y = W_Time_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
+ggplot(data_ratios, aes(x=as.character(FSM_ID), y = W_Time_Ratio, group = Algorithm_Ratio, color = Algorithm_Ratio, linetype = Algorithm_Ratio, shape = Algorithm_Ratio)) +
     geom_line(size = 1) +  # Line with different types
     geom_point(size = 1.5) +  # Points (tick marks) on the lines
     labs(,
