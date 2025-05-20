@@ -1,39 +1,55 @@
-#include<fstream>
-#include<iostream>
-#include<vector>
-#include <stack>
-#include <queue>
-#include <chrono>
-#include <Windows.h>
-#include <Psapi.h>
-#include <deque>
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h>
-using namespace std;
-vector<vector<int>> nextStates;
-vector<vector<int>> observedOutputs;
-vector<vector<vector<int>>> separatingSequences;
-int FSMid = 0, FSMStates = 0, FSMSize = 0, FSMInputs = 0, FSMOutputs = 0, dv = 0;
-int pairCount = 0;
-int transferLengthC = 0;
-int transferLengthO = 0;
-int transferLengthM = 0;
+// Include necessary libraries for various tasks like file handling, vectors, stacks, queues, memory management, etc.
+#include<fstream>  // For file operations like reading and writing
+#include<iostream>  // For input/output operations
+#include<vector>  // For using vectors (dynamic arrays)
+#include <stack>  // For using stack data structure
+#include <queue>  // For using queue data structure
+#include <chrono>  // For time-related operations (e.g., performance measurement)
+#include <Windows.h>  // For Windows-specific functions (e.g., memory management)
+#include <Psapi.h>  // For Windows API related to memory usage
+#include <deque>  // For using deque (double-ended queue) data structure
 
-int maximumPath = 0;
+#define _CRTDBG_MAP_ALLOC  // Enable heap debugging in MSVC
+#include <crtdbg.h>  // For heap memory management and debugging in MSVC
 
-int depth = 0;
-deque<int> indexes;
-vector<int> inputsOrder;
-stack<int> mySequence;
-stack<int> sequence;
+using namespace std;  // Use the standard namespace to avoid prefixing 'std::' every time
+
+// Declare global variables for FSM (Finite State Machine) parameters
+vector<vector<int>> nextStates;  // 2D vector to store the next state transitions for FSM
+vector<vector<int>> observedOutputs;  // 2D vector to store observed outputs for FSM
+vector<vector<vector<int>>> separatingSequences;  // 3D vector to store separating sequences (used in FSM logic)
+
+// FSM-related global variables
+int FSMid = 0;  // FSM identifier
+int FSMStates = 0;  // Number of states in the FSM
+int FSMSize = 0;  // Size of the FSM (total number of elements, states, or transitions)
+int FSMInputs = 0;  // Number of inputs for the FSM
+int FSMOutputs = 0;  // Number of outputs for the FSM
+int dv = 0;  // Unknown variable, possibly related to FSM (unspecified in this snippet)
+
+int pairCount = 0;  // Keeps count of the number of state pairs
+int transferLengthC = 0;  // Length of transfers for component C (probably memory-related)
+int transferLengthO = 0;  // Length of transfers for component O (probably memory-related)
+int transferLengthM = 0;  // Length of transfers for component M (probably memory-related)
+
+int maximumPath = 0;  // Stores the maximum path length, possibly in FSM states
+
+int depth = 0;  // Represents the depth level in some FSM-related logic (e.g., search or recursion)
+deque<int> indexes;  // A deque (double-ended queue) to store indexes (used in FSM processing)
+vector<int> inputsOrder;  // Stores the order of inputs (possibly for FSM transitions)
+stack<int> mySequence;  // Stack to store a sequence of integers (possibly for backtracking or FSM traversal)
+stack<int> sequence;  // Another stack, probably used for managing FSM-related sequence operations
+
+// Define a structure 'edge' to represent transitions in the FSM
 struct edge {
-    int dest;
-    bool visited;
+    int dest;  // The destination state of the edge (transition)
+    bool visited;  // Flag to mark if the edge has been visited
 };
 
-vector<vector<edge>> edges;
-queue<pair<int, vector<int>>> myQ;
-vector<vector<bool>> sms;
+// Declaring the following global variables related to FSM state transitions
+vector<vector<edge>> edges;  // 2D vector to store the edges (transitions) for FSM, where each state has multiple outgoing edges
+queue<pair<int, vector<int>>> myQ;  // Queue to store pairs of state IDs and associated vectors (used in FSM processing)
+vector<vector<bool>> sms;  // 2D vector of booleans, likely used to represent a matrix for FSM-related conditions
 
 
 double getUsedMemoryMB()//Get the peak working set size (i.e., peak memory usage) of the current process in MB.
