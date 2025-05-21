@@ -1,4 +1,4 @@
-Overview of the Project Components
+
 This project includes implementations in C++ and R, focused on working with Finite State Machines (FSMs) and generating W-sets — a structure used for state identification and test generation in FSM-based testing. Here's a detailed breakdown of its structure and content:
 
 1.. Source Code Components
@@ -62,14 +62,14 @@ FSMStates	Number of states in the FSM.
 FSMInputs	Number of distinct inputs the FSM can receive.
 FSMOutputs	Number of outputs the FSM can produce.
 FSMSize	Total number of transitions (i.e., edges in the FSM graph).
-W_Time	Time (in ms or seconds) taken to construct the W-set.
-W_Memory	Memory (in bytes/KB) used during W-set construction.
+W_Time	Time (in ms) taken to construct the W-set.
+W_Memory	Memory (in MB) used during W-set construction.
 SIS_Tr	Number of inputs used for transfers during state identification.
 SIS_Size	Total number of distinct sequences used for state identification.
 SIS_Cost	Total number of inputs across all state identification sequences.
 TS_Size	Number of sequences in the final test suite.
 TS_Cost	Total number of inputs across the entire test suite.
-Algorithm	Name of the algorithm used (e.g., W, Wp, UIO, etc.).
+Algorithm	Name of the algorithm used (e.g., OWA,CWA,MWA).
 
 
 4. File Mapping: fileBindings.txt
