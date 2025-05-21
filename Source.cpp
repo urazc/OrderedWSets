@@ -28,9 +28,9 @@ int FSMOutputs = 0;  // Number of outputs for the FSM
 int dv = 0;  // Unknown variable, possibly related to FSM (unspecified in this snippet)
 
 int pairCount = 0;  // Keeps count of the number of state pairs
-int transferLengthC = 0;  // Length of transfers for component C (probably memory-related)
-int transferLengthO = 0;  // Length of transfers for component O (probably memory-related)
-int transferLengthM = 0;  // Length of transfers for component M (probably memory-related)
+int transferLengthC = 0;  // Length of transfers for component C ( memory-related)
+int transferLengthO = 0;  // Length of transfers for component O ( memory-related)
+int transferLengthM = 0;  // Length of transfers for component M ( memory-related)
 
 int maximumPath = 0;  // Stores the maximum path length, possibly in FSM states
 
@@ -38,7 +38,7 @@ int depth = 0;  // Represents the depth level in some FSM-related logic (e.g., s
 deque<int> indexes;  // A deque (double-ended queue) to store indexes (used in FSM processing)
 vector<int> inputsOrder;  // Stores the order of inputs (possibly for FSM transitions)
 stack<int> mySequence;  // Stack to store a sequence of integers (possibly for backtracking or FSM traversal)
-stack<int> sequence;  // Another stack, probably used for managing FSM-related sequence operations
+stack<int> sequence;  // Another stack,  used for managing FSM-related sequence operations
 
 // Define a structure 'edge' to represent transitions in the FSM
 struct edge {
